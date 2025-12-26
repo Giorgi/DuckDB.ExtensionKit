@@ -1,0 +1,1 @@
+append_extension_metadata.py -l DuckDBExtension.dll -o dotnetextension1.duckdb_extension -n dotnetextension -p windows_amd64 -dv v1.2.0 -ev v0.0.1
