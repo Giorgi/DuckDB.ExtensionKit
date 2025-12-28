@@ -119,7 +119,7 @@ SELECT * FROM extract_claims_from_jwt('eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZ
 
 ## Unstable API
 
-To use DuckDB's unstable C API functions, set `UseUnstableApi` in your `.csproj`:
+To use DuckDB's [unstable Extension C API functions](https://github.com/duckdb/extension-template-c#using-unstable-extension-c-api-functionality), set `UseUnstableApi` in your `.csproj`:
 
 ```xml
 <PropertyGroup>
