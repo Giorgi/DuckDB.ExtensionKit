@@ -1,6 +1,6 @@
 ﻿# DuckDB Extensions in C#
 
-Build native DuckDB extensions using C# and .NET AOT compilation.
+Build native DuckDB extensions using C# and [.NET AOT compilation](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/).
 
 ## Getting Started
 
