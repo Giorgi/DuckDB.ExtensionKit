@@ -53,8 +53,28 @@ public static partial class JwtExtension
 
     private static bool IsJwt(string jwt)
     {
+        if (string.IsNullOrWhiteSpace(jwt))
+        {
+            return false;
+        }
+
         var jwtHandler = new JwtSecurityTokenHandler();
-        return jwtHandler.CanReadToken(jwt);
+
+        if (!jwtHandler.CanReadToken(jwt))
+        {
+            return false;
+        }
+
+        try
+        {
+            var token = jwtHandler.ReadJwtToken(jwt);
+
+            return token.Header != null && token.Payload != null;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private static string? ExtractClaimFromJwt(string jwt, string claim)

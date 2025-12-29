@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="DuckDB.JWT.Tests/DuckDB.JWT.Tests.csproj" />
   <Project Path="DuckDB.JWT/DuckDB.JWT.csproj" Id="d18eaa6c-7118-4ca5-aa43-66294e95baa6" />
   <Project Path="DuckDB.ExtensionKit.Generators/DuckDB.ExtensionKit.Generators.csproj" />
   <Project Path="DuckDB.ExtensionKit/DuckDB.ExtensionKit.csproj" />
