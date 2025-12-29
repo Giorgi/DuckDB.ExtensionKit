@@ -4,46 +4,34 @@ namespace DuckDB.JWT.Tests;
 
 public class DuckDBExtensionFixture : IDisposable
 {
-    private readonly DuckDBConnection connection;
-    private readonly string extensionDirectory;
     private bool disposed;
 
     public DuckDBExtensionFixture()
     {
-        // Set up custom extension directory
-        extensionDirectory = Path.Combine(AppContext.BaseDirectory, "extensions-install");
-        
-        try
-        {
-            if (Directory.Exists(extensionDirectory))
-            {
-                Directory.Delete(extensionDirectory, recursive: true);
-            }
-        }
-        catch { }
+        var extensionDirectory = Path.Combine(AppContext.BaseDirectory, "extensions-install");
 
         Directory.CreateDirectory(extensionDirectory);
 
         // Allow unsigned extensions and set custom extension directory
         var connectionString = $"DataSource=:memory:;allow_unsigned_extensions=true;extension_directory={extensionDirectory}";
-        connection = new DuckDBConnection(connectionString);
-        connection.Open();
+        Connection = new DuckDBConnection(connectionString);
+        Connection.Open();
 
         LoadJwtExtension();
     }
 
-    public DuckDBConnection Connection => connection;
+    public DuckDBConnection Connection { get; }
 
     private void LoadJwtExtension()
     {
-        var extensionPath = GetExtensionPath();
+        var extensionPath = Path.Combine(AppContext.BaseDirectory, "extensions", "jwt.duckdb_extension");
 
         if (!File.Exists(extensionPath))
         {
             throw new FileNotFoundException($"JWT extension not found at: {extensionPath}");
         }
 
-        using var command = connection.CreateCommand();
+        using var command = Connection.CreateCommand();
         command.CommandText = $"INSTALL '{extensionPath}';";
         command.ExecuteNonQuery();
 
@@ -51,27 +39,11 @@ public class DuckDBExtensionFixture : IDisposable
         command.ExecuteNonQuery();
     }
 
-    private static string GetExtensionPath()
-    {
-        var baseDirectory = AppContext.BaseDirectory;
-        var extensionPath = Path.Combine(baseDirectory, "extensions", "jwt.duckdb_extension");
-        return extensionPath;
-    }
-
     public void Dispose()
     {
         if (disposed) return;
 
-        connection?.Dispose();
-
-        try
-        {
-            if (Directory.Exists(extensionDirectory))
-            {
-                Directory.Delete(extensionDirectory, recursive: true);
-            }
-        }
-        catch { }
+        Connection?.Dispose();
 
         disposed = true;
         GC.SuppressFinalize(this);

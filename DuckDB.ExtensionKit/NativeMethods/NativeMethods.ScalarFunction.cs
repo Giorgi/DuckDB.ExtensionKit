@@ -38,5 +38,8 @@ public static partial class NativeMethods
 
         internal static void* DuckDBScalarFunctionGetExtraInfo(IntPtr scalarFunction) =>
             Api.duckdb_scalar_function_get_extra_info(scalarFunction);
+        
+        internal static void DuckDBScalarFunctionSetError(IntPtr info, byte* error) =>
+            Api.duckdb_scalar_function_set_error(info, error);
     }
 }

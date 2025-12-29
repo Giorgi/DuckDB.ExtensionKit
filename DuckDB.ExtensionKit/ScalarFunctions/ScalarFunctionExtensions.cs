@@ -112,7 +112,17 @@ public static class ScalarFunctionExtensions
 
         var writer = VectorDataWriterFactory.CreateWriter(outputVector, functionInfo.ReturnType);
 
-        functionInfo.Action(readers, writer, chunkSize);
+        try
+        {
+            functionInfo.Action(readers, writer, chunkSize);
+        }
+        catch (Exception ex)
+        {
+            fixed (byte* errorPtr = System.Text.Encoding.UTF8.GetBytes(ex.Message + "\0"))
+            {
+                NativeMethods.NativeMethods.ScalarFunction.DuckDBScalarFunctionSetError(info, errorPtr);
+            }
+        }
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
