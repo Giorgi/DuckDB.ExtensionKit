@@ -56,7 +56,11 @@
   <Target Name="PackageExtension" AfterTargets="Publish" Condition="'$(PublishAot)' == 'true'">
     <Error Condition="'$(DuckDBPlatform)' == ''" Text="Unknown RuntimeIdentifier: $(RuntimeIdentifier)" />
 
-    <Exec Command="python extension-ci-tools\scripts\append_extension_metadata.py -l &quot;$(PublishDir)$(AssemblyName).dll&quot; -o &quot;$(PublishDir)$(ExtensionName).duckdb_extension&quot; -n $(ExtensionName) -p $(DuckDBPlatform) -dv $(DuckDBVersion) -ev $(ExtensionVersion) --abi-type $(AbiType)" />
+    <PropertyGroup>
+      <PythonScriptPath>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', 'extension-ci-tools', 'scripts', 'append_extension_metadata.py'))</PythonScriptPath>
+    </PropertyGroup>
+
+    <Exec Command="python &quot;$(PythonScriptPath)&quot; -l &quot;$(PublishDir)$(AssemblyName).dll&quot; -o &quot;$(PublishDir)$(ExtensionName).duckdb_extension&quot; -n $(ExtensionName) -p $(DuckDBPlatform) -dv $(DuckDBVersion) -ev $(ExtensionVersion) --abi-type $(AbiType)" />
 
     <Message Importance="High" Text="Created $(ExtensionName).duckdb_extension ($(AbiType), $(DuckDBVersion), $(DuckDBPlatform))" />
   </Target>
