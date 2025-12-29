@@ -55,7 +55,7 @@ jobs:
       run: dotnet build DuckDB.JWT.Tests/DuckDB.JWT.Tests.csproj -c Debug
 
     - name: Run tests
-      run: dotnet test DuckDB.JWT.Tests/DuckDB.JWT.Tests.csproj --no-build --verbosity normal
+      run: dotnet test --project DuckDB.JWT.Tests/DuckDB.JWT.Tests.csproj --no-build --verbosity normal
 
     - name: Upload test results
       if: always()
