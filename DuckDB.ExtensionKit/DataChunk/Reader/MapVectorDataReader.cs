@@ -66,4 +66,11 @@ internal sealed class MapVectorDataReader : VectorDataReaderBase
 
         return instance;
     }
+
+    public override void Dispose()
+    {
+        keyReader.Dispose();
+        valueReader.Dispose();
+        base.Dispose();
+    }
 }
