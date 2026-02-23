@@ -68,7 +68,7 @@ public static class TableFunctionExtensions
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void Bind(IntPtr info)
+    private static unsafe void Bind(IntPtr info)
     {
         IDuckDBValueReader[] parameters = [];
         try
@@ -120,11 +120,13 @@ public static class TableFunctionExtensions
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static void Init(IntPtr info) { }
+    private static void Init(IntPtr info) { }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void TableFunction(IntPtr info, IntPtr chunk)
+    private static unsafe void TableFunction(IntPtr info, IntPtr chunk)
     {
+        VectorDataWriterBase[] writers = [];
+        DuckDBLogicalType[] logicalTypes = [];
         try
         {
             var bindData = GCHandle.FromIntPtr(new IntPtr(NativeMethods.NativeMethods.TableFunction.DuckDBFunctionGetBindData(info)));
@@ -142,14 +144,16 @@ public static class TableFunctionExtensions
 
             var dataChunk = new DuckDBDataChunk(chunk);
 
-            var writers = new VectorDataWriterBase[tableFunctionBindData.Columns.Count];
+            writers = new VectorDataWriterBase[tableFunctionBindData.Columns.Count];
+            logicalTypes = new DuckDBLogicalType[tableFunctionBindData.Columns.Count];
+
             for (var columnIndex = 0; columnIndex < tableFunctionBindData.Columns.Count; columnIndex++)
             {
                 var column = tableFunctionBindData.Columns[columnIndex];
                 var vector = NativeMethods.NativeMethods.DataChunks.DuckDBDataChunkGetVector(dataChunk, columnIndex);
 
-                using var logicalType = column.Type.GetLogicalType();
-                writers[columnIndex] = VectorDataWriterFactory.CreateWriter(vector, logicalType);
+                logicalTypes[columnIndex] = column.Type.GetLogicalType();
+                writers[columnIndex] = VectorDataWriterFactory.CreateWriter(vector, logicalTypes[columnIndex]);
             }
 
             ulong size = 0;
@@ -173,6 +177,18 @@ public static class TableFunctionExtensions
             fixed (byte* errorPtr = System.Text.Encoding.UTF8.GetBytes(ex.Message + "\0"))
             {
                 NativeMethods.NativeMethods.TableFunction.DuckDBFunctionSetError(info, errorPtr);
+            }
+        }
+        finally
+        {
+            foreach (var writer in writers)
+            {
+                writer?.Dispose();
+            }
+
+            foreach (var logicalType in logicalTypes)
+            {
+                logicalType?.Dispose();
             }
         }
     }
