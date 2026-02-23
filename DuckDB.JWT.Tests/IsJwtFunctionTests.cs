@@ -2,7 +2,7 @@ using DuckDB.NET.Data;
 
 namespace DuckDB.JWT.Tests;
 
-[ClassDataSource<DuckDBExtensionFixture>(Shared = SharedType.PerAssembly)]
+[ClassDataSource<DuckDBExtensionFixture>(Shared = SharedType.PerClass)]
 public class IsJwtFunctionTests(DuckDBExtensionFixture fixture)
 {
     [Test]
