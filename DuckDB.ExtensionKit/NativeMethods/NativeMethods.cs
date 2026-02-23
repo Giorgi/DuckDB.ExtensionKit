@@ -2,7 +2,7 @@ namespace DuckDB.ExtensionKit.NativeMethods;
 
 public static partial class NativeMethods
 {
-    private static bool _initialized;
+    private static int _initialized;
 
     internal static DuckDBExtApiV1 Api;
 
@@ -10,12 +10,11 @@ public static partial class NativeMethods
 
     public static void InitializeApi(DuckDBExtApiV1 api)
     {
-        if (_initialized)
+        if (Interlocked.CompareExchange(ref _initialized, 1, 0) != 0)
         {
             throw new InvalidOperationException("DuckDB API has already been initialized.");
         }
 
         Api = api;
-        _initialized = true;
     }
 }
