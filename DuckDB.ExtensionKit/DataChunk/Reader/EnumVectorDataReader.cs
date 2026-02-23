@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using DuckDB.ExtensionKit.Extensions;
 using DuckDB.ExtensionKit.Native;
@@ -9,6 +9,7 @@ internal sealed class EnumVectorDataReader : VectorDataReaderBase
 {
     private readonly DuckDBType enumType;
     private readonly DuckDBLogicalType logicalType;
+    private readonly Dictionary<long, string> cachedNames = new(8);
 
     internal unsafe EnumVectorDataReader(IntPtr vector, void* dataPointer, ulong* validityMaskPointer, DuckDBType columnType, string columnName) : base(dataPointer, validityMaskPointer, columnType, columnName)
     {
@@ -44,44 +45,48 @@ internal sealed class EnumVectorDataReader : VectorDataReaderBase
                 throw new DuckDBException($"Invalid type {DuckDBType} ({(int)DuckDBType}) for column {ColumnName}");
         }
 
-        unsafe T ToEnumOrString<TSource>(TSource enumValue) where TSource: unmanaged
+        unsafe T ToEnumOrString<TSource>(TSource enumValue) where TSource : IBinaryNumber<TSource>
         {
             if (typeof(T) == typeof(string))
             {
-                var value = PointerExtensions.ToManagedString(NativeMethods.NativeMethods.LogicalType.DuckDBEnumDictionaryValue(logicalType, (ulong)Convert.ToInt64(enumValue)));
-                return (T)(object)value;
+                var index = long.CreateChecked(enumValue);
+                if (!cachedNames.TryGetValue(index, out var name))
+                {
+                    cachedNames[index] = name = PointerExtensions.ToManagedString(NativeMethods.NativeMethods.LogicalType.DuckDBEnumDictionaryValue(logicalType, (ulong)index));
+                }
+
+                return (T)(object)name;
             }
             return Unsafe.As<TSource, T>(ref enumValue);
         }
     }
 
-    internal override object GetValue(ulong offset, Type targetType)
+    internal override unsafe object GetValue(ulong offset, Type targetType)
     {
         if (DuckDBType == DuckDBType.Enum)
         {
-            return GetEnum(offset, targetType);
+            long enumValue = enumType switch
+            {
+                DuckDBType.UnsignedTinyInt => GetFieldData<byte>(offset),
+                DuckDBType.UnsignedSmallInt => GetFieldData<ushort>(offset),
+                DuckDBType.UnsignedInteger => GetFieldData<uint>(offset),
+                _ => throw new DuckDBException($"Invalid type {DuckDBType} ({(int)DuckDBType}) for column {ColumnName}")
+            };
+
+            if (targetType == typeof(string))
+            {
+                if (!cachedNames.TryGetValue(enumValue, out var name))
+                {
+                    cachedNames[enumValue] = name = PointerExtensions.ToManagedString(NativeMethods.NativeMethods.LogicalType.DuckDBEnumDictionaryValue(logicalType, (ulong)enumValue));
+                }
+
+                return name;
+            }
+
+            return Enum.ToObject(targetType, enumValue);
         }
 
         return base.GetValue(offset, targetType);
-    }
-
-    private unsafe object GetEnum(ulong offset, Type returnType)
-    {
-        long enumValue = enumType switch
-        {
-            DuckDBType.UnsignedTinyInt => GetFieldData<byte>(offset),
-            DuckDBType.UnsignedSmallInt => GetFieldData<ushort>(offset),
-            DuckDBType.UnsignedInteger => GetFieldData<uint>(offset),
-            _ => -1
-        };
-
-        if (returnType == typeof(string))
-        {
-            return PointerExtensions.ToManagedString(NativeMethods.NativeMethods.LogicalType.DuckDBEnumDictionaryValue(logicalType, (ulong)enumValue));
-        }
-        
-        var enumItem = Enum.Parse(returnType, enumValue.ToString(CultureInfo.InvariantCulture));
-        return enumItem;
     }
 
     public override void Dispose()
