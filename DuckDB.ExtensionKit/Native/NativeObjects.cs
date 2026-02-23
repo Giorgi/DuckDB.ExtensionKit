@@ -332,7 +332,7 @@ public unsafe struct DuckDBStringT
 
     public readonly int Length => (int)value.inlined.length;
 
-    public readonly unsafe sbyte* Data
+    public readonly sbyte* Data
     {
         get
         {
@@ -359,7 +359,7 @@ public unsafe struct DuckDBStringT
         [FieldOffset(0)]
         public DuckDBStringInlined inlined;
 
-        public unsafe partial struct DuckDBStringPointer
+        public partial struct DuckDBStringPointer
         {
             public uint length;
 
@@ -368,7 +368,7 @@ public unsafe struct DuckDBStringT
             public sbyte* ptr;
         }
 
-        public unsafe partial struct DuckDBStringInlined
+        public partial struct DuckDBStringInlined
         {
             public uint length;
 

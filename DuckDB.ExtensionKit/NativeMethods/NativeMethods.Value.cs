@@ -1,3 +1,4 @@
+using DuckDB.ExtensionKit.Extensions;
 using DuckDB.ExtensionKit.Native;
 
 namespace DuckDB.ExtensionKit.NativeMethods;
@@ -39,10 +40,6 @@ public static partial class NativeMethods
 
         internal static DuckDBUHugeInt DuckDBGetUHugeInt(DuckDBValue value) => Api.duckdb_get_uhugeint(value.DangerousGetHandle());
 
-        internal static string DuckDBGetVarchar(DuckDBValue value)
-        {
-            var ptr = Api.duckdb_get_varchar(value.DangerousGetHandle());
-            return System.Runtime.InteropServices.Marshal.PtrToStringUTF8((IntPtr)ptr) ?? string.Empty;
-        }
+        internal static string DuckDBGetVarchar(DuckDBValue value) => PointerExtensions.ToManagedString(Api.duckdb_get_varchar(value.DangerousGetHandle()));
     }
 }
