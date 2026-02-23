@@ -21,28 +21,28 @@ public unsafe struct DuckDBExtApiV1
 
     // --- Config ---
     public delegate* unmanaged[Cdecl]<nint*, DuckDBState> duckdb_create_config;
-    public delegate* unmanaged[Cdecl]<nuint> duckdb_config_count;
-    public delegate* unmanaged[Cdecl]<nuint, byte**, byte**, DuckDBState> duckdb_get_config_flag;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nuint> duckdb_config_count;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nuint, byte**, byte**, DuckDBState> duckdb_get_config_flag;
     public delegate* unmanaged[Cdecl]<nint, byte*, byte*, DuckDBState> duckdb_set_config;
     public delegate* unmanaged[Cdecl]<nint*, void> duckdb_destroy_config;
 
     // --- Query ---
     public delegate* unmanaged[Cdecl]<nint, byte*, nint*, DuckDBState> duckdb_query;
     public delegate* unmanaged[Cdecl]<nint*, void> duckdb_destroy_result;
-    public delegate* unmanaged[Cdecl]<nint*, ulong, byte*> duckdb_column_name;
-    public delegate* unmanaged[Cdecl]<nint*, ulong, DuckDBType> duckdb_column_type;
-    public delegate* unmanaged[Cdecl]<nint, DuckDBStatementType> duckdb_result_statement_type;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint*, ulong, byte*> duckdb_column_name;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint*, ulong, DuckDBType> duckdb_column_type;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, DuckDBStatementType> duckdb_result_statement_type;
     public delegate* unmanaged[Cdecl]<nint*, ulong, nint> duckdb_column_logical_type;
-    public delegate* unmanaged[Cdecl]<nint*, ulong> duckdb_column_count;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint*, ulong> duckdb_column_count;
     public delegate* unmanaged[Cdecl]<nint*, ulong> duckdb_rows_changed;
-    public delegate* unmanaged[Cdecl]<nint*, byte*> duckdb_result_error;
-    public delegate* unmanaged[Cdecl]<nint*, DuckDBErrorType> duckdb_result_error_type;
-    public delegate* unmanaged[Cdecl]<nint, DuckDBResultType> duckdb_result_return_type;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint*, byte*> duckdb_result_error;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint*, DuckDBErrorType> duckdb_result_error_type;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, DuckDBResultType> duckdb_result_return_type;
 
     // --- Memory ---
     public delegate* unmanaged[Cdecl]<nuint, void*> duckdb_malloc;
     public delegate* unmanaged[Cdecl]<void*, void> duckdb_free;
-    public delegate* unmanaged[Cdecl]<ulong> duckdb_vector_size;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<ulong> duckdb_vector_size;
 
     // --- String helpers ---
     public delegate* unmanaged[Cdecl]<DuckDBStringT, byte> duckdb_string_is_inlined;
@@ -50,16 +50,16 @@ public unsafe struct DuckDBExtApiV1
     public delegate* unmanaged[Cdecl]<DuckDBStringT*, byte*> duckdb_string_t_data;
 
     // --- Date/Time conversions ---
-    public delegate* unmanaged[Cdecl]<DuckDBDate, DuckDBDateOnly> duckdb_from_date;
-    public delegate* unmanaged[Cdecl]<DuckDBDateOnly, DuckDBDate> duckdb_to_date;
-    public delegate* unmanaged[Cdecl]<DuckDBDate, byte> duckdb_is_finite_date;
-    public delegate* unmanaged[Cdecl]<DuckDBTime, DuckDBTimeOnly> duckdb_from_time;
-    public delegate* unmanaged[Cdecl]<long, int, DuckDBTimeTz> duckdb_create_time_tz;
-    public delegate* unmanaged[Cdecl]<DuckDBTimeTz, DuckDBTimeTzStruct> duckdb_from_time_tz;
-    public delegate* unmanaged[Cdecl]<DuckDBTimeOnly, DuckDBTime> duckdb_to_time;
-    public delegate* unmanaged[Cdecl]<DuckDBTimestamp, DuckDBTimestampStruct> duckdb_from_timestamp;
-    public delegate* unmanaged[Cdecl]<DuckDBTimestampStruct, DuckDBTimestamp> duckdb_to_timestamp;
-    public delegate* unmanaged[Cdecl]<DuckDBTimestamp, byte> duckdb_is_finite_timestamp;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBDate, DuckDBDateOnly> duckdb_from_date;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBDateOnly, DuckDBDate> duckdb_to_date;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBDate, byte> duckdb_is_finite_date;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTime, DuckDBTimeOnly> duckdb_from_time;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<long, int, DuckDBTimeTz> duckdb_create_time_tz;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTimeTz, DuckDBTimeTzStruct> duckdb_from_time_tz;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTimeOnly, DuckDBTime> duckdb_to_time;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTimestamp, DuckDBTimestampStruct> duckdb_from_timestamp;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTimestampStruct, DuckDBTimestamp> duckdb_to_timestamp;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTimestamp, byte> duckdb_is_finite_timestamp;
 
     // --- Numeric conversions ---
     public delegate* unmanaged[Cdecl]<DuckDBHugeInt, double> duckdb_hugeint_to_double;
@@ -67,13 +67,13 @@ public unsafe struct DuckDBExtApiV1
     public delegate* unmanaged[Cdecl]<DuckDBUHugeInt, double> duckdb_uhugeint_to_double;
     public delegate* unmanaged[Cdecl]<double, DuckDBUHugeInt> duckdb_double_to_uhugeint;
     public delegate* unmanaged[Cdecl]<double, byte, byte, DuckDBDecimal> duckdb_double_to_decimal;
-    public delegate* unmanaged[Cdecl]<DuckDBDecimal, double> duckdb_decimal_to_double;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBDecimal, double> duckdb_decimal_to_double;
 
     // --- Prepared Statements ---
     public delegate* unmanaged[Cdecl]<nint, byte*, nint*, DuckDBState> duckdb_prepare;
     public delegate* unmanaged[Cdecl]<nint*, void> duckdb_destroy_prepare;
-    public delegate* unmanaged[Cdecl]<nint, byte*> duckdb_prepare_error;
-    public delegate* unmanaged[Cdecl]<nint, ulong> duckdb_nparams;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, byte*> duckdb_prepare_error;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, ulong> duckdb_nparams;
     public delegate* unmanaged[Cdecl]<nint, ulong, byte*> duckdb_parameter_name;
     public delegate* unmanaged[Cdecl]<nint, ulong, DuckDBType> duckdb_param_type;
     public delegate* unmanaged[Cdecl]<nint, ulong, nint> duckdb_param_logical_type;
@@ -170,7 +170,7 @@ public unsafe struct DuckDBExtApiV1
     public delegate* unmanaged[Cdecl]<nint, DuckDBTimeTz> duckdb_get_time_tz;
     public delegate* unmanaged[Cdecl]<nint, DuckDBTimestamp> duckdb_get_timestamp;
     public delegate* unmanaged[Cdecl]<nint, DuckDBInterval> duckdb_get_interval;
-    public delegate* unmanaged[Cdecl]<nint, nint> duckdb_get_value_type;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, nint> duckdb_get_value_type;
     public delegate* unmanaged[Cdecl]<nint, DuckDBBlob> duckdb_get_blob;
     public delegate* unmanaged[Cdecl]<nint, DuckDBVarInt> duckdb_get_varint;
     public delegate* unmanaged[Cdecl]<nint, DuckDBDecimal> duckdb_get_decimal;
@@ -185,7 +185,7 @@ public unsafe struct DuckDBExtApiV1
     public delegate* unmanaged[Cdecl]<nint, ulong> duckdb_get_map_size;
     public delegate* unmanaged[Cdecl]<nint, ulong, nint> duckdb_get_map_key;
     public delegate* unmanaged[Cdecl]<nint, ulong, nint> duckdb_get_map_value;
-    public delegate* unmanaged[Cdecl]<nint, byte> duckdb_is_null_value;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, byte> duckdb_is_null_value;
     public delegate* unmanaged[Cdecl]<nint> duckdb_create_null_value;
     public delegate* unmanaged[Cdecl]<nint, ulong> duckdb_get_list_size;
     public delegate* unmanaged[Cdecl]<nint, ulong, nint> duckdb_get_list_child;
@@ -204,19 +204,19 @@ public unsafe struct DuckDBExtApiV1
     public delegate* unmanaged[Cdecl]<nint*, byte**, ulong, nint> duckdb_create_struct_type;
     public delegate* unmanaged[Cdecl]<byte**, ulong, nint> duckdb_create_enum_type;
     public delegate* unmanaged[Cdecl]<byte, byte, nint> duckdb_create_decimal_type;
-    public delegate* unmanaged[Cdecl]<nint, DuckDBType> duckdb_get_type_id;
-    public delegate* unmanaged[Cdecl]<nint, byte> duckdb_decimal_width;
-    public delegate* unmanaged[Cdecl]<nint, byte> duckdb_decimal_scale;
-    public delegate* unmanaged[Cdecl]<nint, DuckDBType> duckdb_decimal_internal_type;
-    public delegate* unmanaged[Cdecl]<nint, DuckDBType> duckdb_enum_internal_type;
-    public delegate* unmanaged[Cdecl]<nint, uint> duckdb_enum_dictionary_size;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, DuckDBType> duckdb_get_type_id;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, byte> duckdb_decimal_width;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, byte> duckdb_decimal_scale;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, DuckDBType> duckdb_decimal_internal_type;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, DuckDBType> duckdb_enum_internal_type;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, uint> duckdb_enum_dictionary_size;
     public delegate* unmanaged[Cdecl]<nint, ulong, byte*> duckdb_enum_dictionary_value;
     public delegate* unmanaged[Cdecl]<nint, nint> duckdb_list_type_child_type;
     public delegate* unmanaged[Cdecl]<nint, nint> duckdb_array_type_child_type;
-    public delegate* unmanaged[Cdecl]<nint, ulong> duckdb_array_type_array_size;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, ulong> duckdb_array_type_array_size;
     public delegate* unmanaged[Cdecl]<nint, nint> duckdb_map_type_key_type;
     public delegate* unmanaged[Cdecl]<nint, nint> duckdb_map_type_value_type;
-    public delegate* unmanaged[Cdecl]<nint, ulong> duckdb_struct_type_child_count;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, ulong> duckdb_struct_type_child_count;
     public delegate* unmanaged[Cdecl]<nint, ulong, byte*> duckdb_struct_type_child_name;
     public delegate* unmanaged[Cdecl]<nint, ulong, nint> duckdb_struct_type_child_type;
     public delegate* unmanaged[Cdecl]<nint, ulong> duckdb_union_type_member_count;
@@ -229,24 +229,24 @@ public unsafe struct DuckDBExtApiV1
     public delegate* unmanaged[Cdecl]<nint*, ulong, nint> duckdb_create_data_chunk;
     public delegate* unmanaged[Cdecl]<nint*, void> duckdb_destroy_data_chunk;
     public delegate* unmanaged[Cdecl]<nint, void> duckdb_data_chunk_reset;
-    public delegate* unmanaged[Cdecl]<nint, ulong> duckdb_data_chunk_get_column_count;
-    public delegate* unmanaged[Cdecl]<nint, ulong, nint> duckdb_data_chunk_get_vector;
-    public delegate* unmanaged[Cdecl]<nint, ulong> duckdb_data_chunk_get_size;
-    public delegate* unmanaged[Cdecl]<nint, ulong, void> duckdb_data_chunk_set_size;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, ulong> duckdb_data_chunk_get_column_count;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, ulong, nint> duckdb_data_chunk_get_vector;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, ulong> duckdb_data_chunk_get_size;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, ulong, void> duckdb_data_chunk_set_size;
 
     // --- Vectors ---
     public delegate* unmanaged[Cdecl]<nint, nint> duckdb_vector_get_column_type;
-    public delegate* unmanaged[Cdecl]<nint, void*> duckdb_vector_get_data;
-    public delegate* unmanaged[Cdecl]<nint, ulong*> duckdb_vector_get_validity;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, void*> duckdb_vector_get_data;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, ulong*> duckdb_vector_get_validity;
     public delegate* unmanaged[Cdecl]<nint, void> duckdb_vector_ensure_validity_writable;
     public delegate* unmanaged[Cdecl]<nint, ulong, byte*, void> duckdb_vector_assign_string_element;
     public delegate* unmanaged[Cdecl]<nint, ulong, byte*, ulong, void> duckdb_vector_assign_string_element_len;
-    public delegate* unmanaged[Cdecl]<nint, nint> duckdb_list_vector_get_child;
-    public delegate* unmanaged[Cdecl]<nint, ulong> duckdb_list_vector_get_size;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, nint> duckdb_list_vector_get_child;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, ulong> duckdb_list_vector_get_size;
     public delegate* unmanaged[Cdecl]<nint, ulong, DuckDBState> duckdb_list_vector_set_size;
     public delegate* unmanaged[Cdecl]<nint, ulong, DuckDBState> duckdb_list_vector_reserve;
-    public delegate* unmanaged[Cdecl]<nint, ulong, nint> duckdb_struct_vector_get_child;
-    public delegate* unmanaged[Cdecl]<nint, nint> duckdb_array_vector_get_child;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, ulong, nint> duckdb_struct_vector_get_child;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, nint> duckdb_array_vector_get_child;
 
     // --- Validity ---
     public delegate* unmanaged[Cdecl]<ulong*, ulong, byte> duckdb_validity_row_is_valid;
@@ -260,14 +260,14 @@ public unsafe struct DuckDBExtApiV1
     public delegate* unmanaged[Cdecl]<nint, byte*, void> duckdb_scalar_function_set_name;
     public delegate* unmanaged[Cdecl]<nint, nint, void> duckdb_scalar_function_set_varargs;
     public delegate* unmanaged[Cdecl]<nint, void> duckdb_scalar_function_set_special_handling;
-    public delegate* unmanaged[Cdecl]<nint, void> duckdb_scalar_function_set_volatile;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, void> duckdb_scalar_function_set_volatile;
     public delegate* unmanaged[Cdecl]<nint, nint, void> duckdb_scalar_function_add_parameter;
     public delegate* unmanaged[Cdecl]<nint, nint, void> duckdb_scalar_function_set_return_type;
-    public delegate* unmanaged[Cdecl]<nint, void*, delegate* unmanaged[Cdecl]<void*, void>, void> duckdb_scalar_function_set_extra_info;
-    public delegate* unmanaged[Cdecl]<nint, delegate* unmanaged[Cdecl]<nint, nint, nint, void>, void> duckdb_scalar_function_set_function;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, void*, delegate* unmanaged[Cdecl]<void*, void>, void> duckdb_scalar_function_set_extra_info;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, delegate* unmanaged[Cdecl]<nint, nint, nint, void>, void> duckdb_scalar_function_set_function;
     public delegate* unmanaged[Cdecl]<nint, nint, DuckDBState> duckdb_register_scalar_function;
-    public delegate* unmanaged[Cdecl]<nint, void*> duckdb_scalar_function_get_extra_info;
-    public delegate* unmanaged[Cdecl]<nint, byte*, void> duckdb_scalar_function_set_error;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, void*> duckdb_scalar_function_get_extra_info;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, byte*, void> duckdb_scalar_function_set_error;
 
     // --- Scalar function sets ---
     public delegate* unmanaged[Cdecl]<byte*, nint> duckdb_create_scalar_function_set;
@@ -301,21 +301,21 @@ public unsafe struct DuckDBExtApiV1
     public delegate* unmanaged[Cdecl]<nint, byte*, void> duckdb_table_function_set_name;
     public delegate* unmanaged[Cdecl]<nint, nint, void> duckdb_table_function_add_parameter;
     public delegate* unmanaged[Cdecl]<nint, byte*, nint, void> duckdb_table_function_add_named_parameter;
-    public delegate* unmanaged[Cdecl]<nint, void*, delegate* unmanaged[Cdecl]<void*, void>, void> duckdb_table_function_set_extra_info;
-    public delegate* unmanaged[Cdecl]<nint, delegate* unmanaged[Cdecl]<nint, void>, void> duckdb_table_function_set_bind;
-    public delegate* unmanaged[Cdecl]<nint, delegate* unmanaged[Cdecl]<nint, void>, void> duckdb_table_function_set_init;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, void*, delegate* unmanaged[Cdecl]<void*, void>, void> duckdb_table_function_set_extra_info;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, delegate* unmanaged[Cdecl]<nint, void>, void> duckdb_table_function_set_bind;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, delegate* unmanaged[Cdecl]<nint, void>, void> duckdb_table_function_set_init;
     public delegate* unmanaged[Cdecl]<nint, delegate* unmanaged[Cdecl]<nint, void>, void> duckdb_table_function_set_local_init;
-    public delegate* unmanaged[Cdecl]<nint, delegate* unmanaged[Cdecl]<nint, nint, void>, void> duckdb_table_function_set_function;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, delegate* unmanaged[Cdecl]<nint, nint, void>, void> duckdb_table_function_set_function;
     public delegate* unmanaged[Cdecl]<nint, byte, void> duckdb_table_function_supports_projection_pushdown;
     public delegate* unmanaged[Cdecl]<nint, nint, DuckDBState> duckdb_register_table_function;
 
     // --- Bind info ---
-    public delegate* unmanaged[Cdecl]<nint, void*> duckdb_bind_get_extra_info;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, void*> duckdb_bind_get_extra_info;
     public delegate* unmanaged[Cdecl]<nint, byte*, nint, void> duckdb_bind_add_result_column;
-    public delegate* unmanaged[Cdecl]<nint, ulong> duckdb_bind_get_parameter_count;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, ulong> duckdb_bind_get_parameter_count;
     public delegate* unmanaged[Cdecl]<nint, ulong, nint> duckdb_bind_get_parameter;
     public delegate* unmanaged[Cdecl]<nint, byte*, nint> duckdb_bind_get_named_parameter;
-    public delegate* unmanaged[Cdecl]<nint, void*, delegate* unmanaged[Cdecl]<void*, void>, void> duckdb_bind_set_bind_data;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, void*, delegate* unmanaged[Cdecl]<void*, void>, void> duckdb_bind_set_bind_data;
     public delegate* unmanaged[Cdecl]<nint, ulong, byte, void> duckdb_bind_set_cardinality;
     public delegate* unmanaged[Cdecl]<nint, byte*, void> duckdb_bind_set_error;
 
@@ -329,8 +329,8 @@ public unsafe struct DuckDBExtApiV1
     public delegate* unmanaged[Cdecl]<nint, byte*, void> duckdb_init_set_error;
 
     // --- Function info ---
-    public delegate* unmanaged[Cdecl]<nint, void*> duckdb_function_get_extra_info;
-    public delegate* unmanaged[Cdecl]<nint, void*> duckdb_function_get_bind_data;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, void*> duckdb_function_get_extra_info;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, void*> duckdb_function_get_bind_data;
     public delegate* unmanaged[Cdecl]<nint, void*> duckdb_function_get_init_data;
     public delegate* unmanaged[Cdecl]<nint, void*> duckdb_function_get_local_init_data;
     public delegate* unmanaged[Cdecl]<nint, byte*, void> duckdb_function_set_error;
@@ -349,9 +349,9 @@ public unsafe struct DuckDBExtApiV1
     // --- Appender ---
     public delegate* unmanaged[Cdecl]<nint, byte*, byte*, nint*, DuckDBState> duckdb_appender_create;
     public delegate* unmanaged[Cdecl]<nint, byte*, byte*, byte*, nint*, DuckDBState> duckdb_appender_create_ext;
-    public delegate* unmanaged[Cdecl]<nint, ulong> duckdb_appender_column_count;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, ulong> duckdb_appender_column_count;
     public delegate* unmanaged[Cdecl]<nint, ulong, nint> duckdb_appender_column_type;
-    public delegate* unmanaged[Cdecl]<nint, byte*> duckdb_appender_error;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, byte*> duckdb_appender_error;
     public delegate* unmanaged[Cdecl]<nint, DuckDBState> duckdb_appender_flush;
     public delegate* unmanaged[Cdecl]<nint, DuckDBState> duckdb_appender_close;
     public delegate* unmanaged[Cdecl]<nint*, DuckDBState> duckdb_appender_destroy;
@@ -395,9 +395,9 @@ public unsafe struct DuckDBExtApiV1
     public delegate* unmanaged[Cdecl]<nint*, void> duckdb_destroy_cast_function;
 
     // --- Timestamp variants ---
-    public delegate* unmanaged[Cdecl]<DuckDBTimestampS, byte> duckdb_is_finite_timestamp_s;
-    public delegate* unmanaged[Cdecl]<DuckDBTimestampMs, byte> duckdb_is_finite_timestamp_ms;
-    public delegate* unmanaged[Cdecl]<DuckDBTimestampNs, byte> duckdb_is_finite_timestamp_ns;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTimestampS, byte> duckdb_is_finite_timestamp_s;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTimestampMs, byte> duckdb_is_finite_timestamp_ms;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTimestampNs, byte> duckdb_is_finite_timestamp_ns;
     public delegate* unmanaged[Cdecl]<DuckDBTimestamp, nint> duckdb_create_timestamp_tz;
     public delegate* unmanaged[Cdecl]<DuckDBTimestampS, nint> duckdb_create_timestamp_s;
     public delegate* unmanaged[Cdecl]<DuckDBTimestampMs, nint> duckdb_create_timestamp_ms;
@@ -414,34 +414,34 @@ public unsafe struct DuckDBExtApiV1
     public delegate* unmanaged[Cdecl]<nint, DuckDBState> duckdb_appender_begin_row;
     public delegate* unmanaged[Cdecl]<nint, DuckDBState> duckdb_appender_end_row;
     public delegate* unmanaged[Cdecl]<nint, DuckDBState> duckdb_append_default;
-    public delegate* unmanaged[Cdecl]<nint, byte, DuckDBState> duckdb_append_bool;
-    public delegate* unmanaged[Cdecl]<nint, sbyte, DuckDBState> duckdb_append_int8;
-    public delegate* unmanaged[Cdecl]<nint, short, DuckDBState> duckdb_append_int16;
-    public delegate* unmanaged[Cdecl]<nint, int, DuckDBState> duckdb_append_int32;
-    public delegate* unmanaged[Cdecl]<nint, long, DuckDBState> duckdb_append_int64;
-    public delegate* unmanaged[Cdecl]<nint, DuckDBHugeInt, DuckDBState> duckdb_append_hugeint;
-    public delegate* unmanaged[Cdecl]<nint, byte, DuckDBState> duckdb_append_uint8;
-    public delegate* unmanaged[Cdecl]<nint, ushort, DuckDBState> duckdb_append_uint16;
-    public delegate* unmanaged[Cdecl]<nint, uint, DuckDBState> duckdb_append_uint32;
-    public delegate* unmanaged[Cdecl]<nint, ulong, DuckDBState> duckdb_append_uint64;
-    public delegate* unmanaged[Cdecl]<nint, DuckDBUHugeInt, DuckDBState> duckdb_append_uhugeint;
-    public delegate* unmanaged[Cdecl]<nint, float, DuckDBState> duckdb_append_float;
-    public delegate* unmanaged[Cdecl]<nint, double, DuckDBState> duckdb_append_double;
-    public delegate* unmanaged[Cdecl]<nint, DuckDBDate, DuckDBState> duckdb_append_date;
-    public delegate* unmanaged[Cdecl]<nint, DuckDBTime, DuckDBState> duckdb_append_time;
-    public delegate* unmanaged[Cdecl]<nint, DuckDBTimestamp, DuckDBState> duckdb_append_timestamp;
-    public delegate* unmanaged[Cdecl]<nint, DuckDBInterval, DuckDBState> duckdb_append_interval;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, byte, DuckDBState> duckdb_append_bool;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, sbyte, DuckDBState> duckdb_append_int8;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, short, DuckDBState> duckdb_append_int16;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, int, DuckDBState> duckdb_append_int32;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, long, DuckDBState> duckdb_append_int64;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, DuckDBHugeInt, DuckDBState> duckdb_append_hugeint;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, byte, DuckDBState> duckdb_append_uint8;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, ushort, DuckDBState> duckdb_append_uint16;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, uint, DuckDBState> duckdb_append_uint32;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, ulong, DuckDBState> duckdb_append_uint64;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, DuckDBUHugeInt, DuckDBState> duckdb_append_uhugeint;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, float, DuckDBState> duckdb_append_float;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, double, DuckDBState> duckdb_append_double;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, DuckDBDate, DuckDBState> duckdb_append_date;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, DuckDBTime, DuckDBState> duckdb_append_time;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, DuckDBTimestamp, DuckDBState> duckdb_append_timestamp;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, DuckDBInterval, DuckDBState> duckdb_append_interval;
     public delegate* unmanaged[Cdecl]<nint, byte*, DuckDBState> duckdb_append_varchar;
     public delegate* unmanaged[Cdecl]<nint, byte*, ulong, DuckDBState> duckdb_append_varchar_length;
     public delegate* unmanaged[Cdecl]<nint, void*, ulong, DuckDBState> duckdb_append_blob;
-    public delegate* unmanaged[Cdecl]<nint, DuckDBState> duckdb_append_null;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, DuckDBState> duckdb_append_null;
 
     // === END OF STABLE API ===
 
     // === UNSTABLE API - These functions may change between DuckDB versions ===
 
     [Experimental("DUCKDBExtensionKit001", Message = "This is an unstable DuckDB API that may change in a future version. Set <UseUnstableApi>true</UseUnstableApi> in your .csproj to suppress this warning.")]
-    public delegate* unmanaged[Cdecl]<nint*, ulong> duckdb_row_count;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint*, ulong> duckdb_row_count;
     [Experimental("DUCKDBExtensionKit001", Message = "This is an unstable DuckDB API that may change in a future version. Set <UseUnstableApi>true</UseUnstableApi> in your .csproj to suppress this warning.")]
     public delegate* unmanaged[Cdecl]<nint*, ulong, void*> duckdb_column_data;
     [Experimental("DUCKDBExtensionKit001", Message = "This is an unstable DuckDB API that may change in a future version. Set <UseUnstableApi>true</UseUnstableApi> in your .csproj to suppress this warning.")]
@@ -449,9 +449,9 @@ public unsafe struct DuckDBExtApiV1
     [Experimental("DUCKDBExtensionKit001", Message = "This is an unstable DuckDB API that may change in a future version. Set <UseUnstableApi>true</UseUnstableApi> in your .csproj to suppress this warning.")]
     public delegate* unmanaged[Cdecl]<nint, ulong, nint> duckdb_result_get_chunk;
     [Experimental("DUCKDBExtensionKit001", Message = "This is an unstable DuckDB API that may change in a future version. Set <UseUnstableApi>true</UseUnstableApi> in your .csproj to suppress this warning.")]
-    public delegate* unmanaged[Cdecl]<nint, byte> duckdb_result_is_streaming;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, byte> duckdb_result_is_streaming;
     [Experimental("DUCKDBExtensionKit001", Message = "This is an unstable DuckDB API that may change in a future version. Set <UseUnstableApi>true</UseUnstableApi> in your .csproj to suppress this warning.")]
-    public delegate* unmanaged[Cdecl]<nint, ulong> duckdb_result_chunk_count;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, ulong> duckdb_result_chunk_count;
     [Experimental("DUCKDBExtensionKit001", Message = "This is an unstable DuckDB API that may change in a future version. Set <UseUnstableApi>true</UseUnstableApi> in your .csproj to suppress this warning.")]
     public delegate* unmanaged[Cdecl]<nint*, ulong, ulong, byte> duckdb_value_boolean;
     [Experimental("DUCKDBExtensionKit001", Message = "This is an unstable DuckDB API that may change in a future version. Set <UseUnstableApi>true</UseUnstableApi> in your .csproj to suppress this warning.")]
