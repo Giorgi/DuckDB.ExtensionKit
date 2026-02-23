@@ -40,8 +40,8 @@ public static partial class JwtExtension
 
             return new TableFunction(new List<ColumnInfo>
             {
-                new((string)"claim_name", typeof(string)),
-                new((string)"claim_value", typeof(string)),
+                new("claim_name", typeof(string)),
+                new("claim_value", typeof(string)),
             }, ExtractClaimsFromJwt(jwt));
         }, (item, writers, rowIndex) =>
         {

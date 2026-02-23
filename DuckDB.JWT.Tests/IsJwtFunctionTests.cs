@@ -48,7 +48,7 @@ public class IsJwtFunctionTests(DuckDBExtensionFixture fixture)
     }
 
     [Test]
-    public async Task IsJwt_MultipleTokesInTable_ReturnsCorrectResults()
+    public async Task IsJwt_MultipleTokensInTable_ReturnsCorrectResults()
     {
         var validToken = JwtTokenHelper.CreateDefaultToken();
         
