@@ -9,32 +9,23 @@ namespace DuckDB.ExtensionKit.TableFunctions;
 
 public static class TableFunctionExtensions
 {
-    public static void RegisterTableFunction(this DuckDBConnection connection, string name, Func<TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback) =>
-        RegisterTableFunctionInternal(connection, name, _ => resultCallback(), mapperCallback);
+    public static void RegisterTableFunction(this DuckDBConnection connection, string name, Func<TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback) => connection.RegisterTableFunctionInternal(name, _ => resultCallback(), mapperCallback);
 
-    public static void RegisterTableFunction<T>(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback) =>
-        RegisterTableFunctionInternal(connection, name, resultCallback, mapperCallback, typeof(T));
+    public static void RegisterTableFunction<T>(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback) => connection.RegisterTableFunctionInternal(name, resultCallback, mapperCallback, typeof(T));
 
-    public static void RegisterTableFunction<T1, T2>(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback) =>
-        RegisterTableFunctionInternal(connection, name, resultCallback, mapperCallback, typeof(T1), typeof(T2));
+    public static void RegisterTableFunction<T1, T2>(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback) => connection.RegisterTableFunctionInternal(name, resultCallback, mapperCallback, typeof(T1), typeof(T2));
 
-    public static void RegisterTableFunction<T1, T2, T3>(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback) =>
-        RegisterTableFunctionInternal(connection, name, resultCallback, mapperCallback, typeof(T1), typeof(T2), typeof(T3));
+    public static void RegisterTableFunction<T1, T2, T3>(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback) => connection.RegisterTableFunctionInternal(name, resultCallback, mapperCallback, typeof(T1), typeof(T2), typeof(T3));
 
-    public static void RegisterTableFunction<T1, T2, T3, T4>(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback) =>
-        RegisterTableFunctionInternal(connection, name, resultCallback, mapperCallback, typeof(T1), typeof(T2), typeof(T3), typeof(T4));
+    public static void RegisterTableFunction<T1, T2, T3, T4>(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback) => connection.RegisterTableFunctionInternal(name, resultCallback, mapperCallback, typeof(T1), typeof(T2), typeof(T3), typeof(T4));
 
-    public static void RegisterTableFunction<T1, T2, T3, T4, T5>(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback) =>
-        RegisterTableFunctionInternal(connection, name, resultCallback, mapperCallback, typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5));
+    public static void RegisterTableFunction<T1, T2, T3, T4, T5>(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback) => connection.RegisterTableFunctionInternal(name, resultCallback, mapperCallback, typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5));
 
-    public static void RegisterTableFunction<T1, T2, T3, T4, T5, T6>(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback) =>
-        RegisterTableFunctionInternal(connection, name, resultCallback, mapperCallback, typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6));
+    public static void RegisterTableFunction<T1, T2, T3, T4, T5, T6>(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback) => connection.RegisterTableFunctionInternal(name, resultCallback, mapperCallback, typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6));
 
-    public static void RegisterTableFunction<T1, T2, T3, T4, T5, T6, T7>(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback) =>
-        RegisterTableFunctionInternal(connection, name, resultCallback, mapperCallback, typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7));
+    public static void RegisterTableFunction<T1, T2, T3, T4, T5, T6, T7>(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback) => connection.RegisterTableFunctionInternal(name, resultCallback, mapperCallback, typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7));
 
-    public static void RegisterTableFunction<T1, T2, T3, T4, T5, T6, T7, T8>(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback) =>
-        RegisterTableFunctionInternal(connection, name, resultCallback, mapperCallback, typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7), typeof(T8));
+    public static void RegisterTableFunction<T1, T2, T3, T4, T5, T6, T7, T8>(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback) => connection.RegisterTableFunctionInternal(name, resultCallback, mapperCallback, typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7), typeof(T8));
 
     private static unsafe void RegisterTableFunctionInternal(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback, params Type[] parameterTypes)
     {
