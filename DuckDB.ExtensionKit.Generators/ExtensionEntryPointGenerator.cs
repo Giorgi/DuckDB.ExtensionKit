@@ -125,8 +125,9 @@ public static unsafe partial class {className}
             Api.duckdb_disconnect(&connection);
             return 1;
         }}
-        catch (System.Exception)
+        catch (System.Exception ex)
         {{
+            SetError(access, info, ex.Message);
             return 0;
         }}
     }}
