@@ -118,7 +118,7 @@ public static unsafe partial class {className}
                 return 0;
             }}
 
-            NativeMethods.Api = Api;
+            NativeMethods.InitializeApi(Api);
 
             RegisterFunctions(new DuckDBConnection(connection));
 
