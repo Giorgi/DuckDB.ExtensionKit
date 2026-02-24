@@ -12,7 +12,7 @@ public static partial class NativeMethods
     {
         if (Interlocked.CompareExchange(ref _initialized, 1, 0) != 0)
         {
-            throw new InvalidOperationException("DuckDB API has already been initialized.");
+            return;
         }
 
         Api = api;

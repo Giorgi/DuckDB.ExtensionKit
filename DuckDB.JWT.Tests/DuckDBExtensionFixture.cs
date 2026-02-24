@@ -10,6 +10,12 @@ public class DuckDBExtensionFixture : IDisposable
     {
         var extensionDirectory = Path.Combine(AppContext.BaseDirectory, "extensions-install");
 
+        try
+        {
+            Directory.Delete(extensionDirectory, true);
+        }
+        catch (Exception) { }
+
         Directory.CreateDirectory(extensionDirectory);
 
         // Allow unsigned extensions and set custom extension directory
