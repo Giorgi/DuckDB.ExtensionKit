@@ -15,21 +15,8 @@ public static partial class JwtExtension
 
         connection.RegisterScalarFunction<string, string, string?>("extract_claim_from_jwt", ExtractClaimFromJwt);
 
-        connection.RegisterTableFunction<string>("extract_claims_from_jwt", parameters =>
-        {
-            var jwt = parameters[0].GetValue<string>();
-
-            return new TableFunction(new List<ColumnInfo>
-            {
-                new("claim_name", typeof(string)),
-                new("claim_value", typeof(string)),
-            }, ExtractClaimsFromJwt(jwt));
-        }, (item, writers, rowIndex) =>
-        {
-            var claim = (KeyValuePair<string, string>)item;
-            writers[0].WriteValue(claim.Key, rowIndex);
-            writers[1].WriteValue(claim.Value, rowIndex);
-        });
+        connection.RegisterTableFunction("extract_claims_from_jwt", (string jwt) => ExtractClaimsFromJwt(jwt),
+                                         c => new { claim_name = c.Key, claim_value = c.Value });
     }
 
     private static bool IsJwt(string jwt)

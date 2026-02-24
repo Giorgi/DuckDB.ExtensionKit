@@ -56,6 +56,11 @@ public static partial class MyExtension
         // Register a scalar function
         connection.RegisterScalarFunction<string, int>("string_length",
             value => value?.Length ?? 0);
+
+        // Register a table function with expression-based projection
+        connection.RegisterTableFunction("get_items",
+            (string category) => GetItems(category),
+            (Item item) => new { name = item.Name, price = item.Price });
     }
 }
 ```
