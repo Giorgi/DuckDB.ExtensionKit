@@ -11,28 +11,9 @@ public static partial class JwtExtension
 {
     private static void RegisterFunctions(DuckDBConnection connection)
     {
-        connection.RegisterScalarFunction<string, bool>("is_jwt", (readers, writer, rowCount) =>
-        {
-            for (ulong index = 0; index < rowCount; index++)
-            {
-                var value = readers[0].GetValue<string>(index);
-                var isJwt = IsJwt(value);
+        connection.RegisterScalarFunction<string, bool>("is_jwt", IsJwt);
 
-                writer.WriteValue(isJwt, index);
-            }
-        });
-
-        connection.RegisterScalarFunction<string, string, string>("extract_claim_from_jwt", (readers, writer, rowCount) =>
-        {
-            for (ulong index = 0; index < rowCount; index++)
-            {
-                var jwt = readers[0].GetValue<string>(index);
-                var claim = readers[1].GetValue<string>(index);
-
-                var claimValue = ExtractClaimFromJwt(jwt, claim);
-                writer.WriteValue(claimValue, index);
-            }
-        });
+        connection.RegisterScalarFunction<string, string, string?>("extract_claim_from_jwt", ExtractClaimFromJwt);
 
         connection.RegisterTableFunction<string>("extract_claims_from_jwt", parameters =>
         {

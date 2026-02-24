@@ -55,14 +55,7 @@ public static partial class MyExtension
     {
         // Register a scalar function
         connection.RegisterScalarFunction<string, int>("string_length",
-            (readers, writer, rowCount) =>
-            {
-                for (ulong i = 0; i < rowCount; i++)
-                {
-                    var value = readers[0].GetValue<string>(i);
-                    writer.WriteValue(value?.Length ?? 0, i);
-                }
-            });
+            value => value?.Length ?? 0);
     }
 }
 ```
