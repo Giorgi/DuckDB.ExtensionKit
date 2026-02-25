@@ -156,4 +156,53 @@ public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixtu
         await Assert.That(claimNames).Contains("role2");
         await Assert.That(claimNames).Contains("role3");
     }
+
+    [Test]
+    public async Task JwtInfo_ReturnsIssuerClaimCountAndExpiry()
+    {
+        var token = JwtTokenHelper.CreateDefaultToken();
+
+        using var command = fixture.Connection.CreateCommand();
+        command.CommandText = "SELECT issuer, claim_count, is_expired FROM jwt_info($token)";
+        command.Parameters.Add(new DuckDBParameter("token", token));
+
+        using var reader = command.ExecuteReader();
+        reader.Read();
+
+        await Assert.That(reader.GetString(0)).IsEqualTo("test-issuer");
+        await Assert.That(reader.GetInt32(1)).IsGreaterThanOrEqualTo(4);
+        await Assert.That(reader.GetBoolean(2)).IsFalse();
+    }
+
+    [Test]
+    public async Task ExtractClaimsLimited_WithLimit_ReturnsLimitedClaims()
+    {
+        var token = JwtTokenHelper.CreateDefaultToken();
+
+        using var command = fixture.Connection.CreateCommand();
+        command.CommandText = "SELECT * FROM extract_claims_limited($token, 2)";
+        command.Parameters.Add(new DuckDBParameter("token", token));
+
+        using var reader = command.ExecuteReader();
+        var count = 0;
+        while (reader.Read()) count++;
+
+        await Assert.That(count).IsEqualTo(2);
+    }
+
+    [Test]
+    public async Task ExtractClaimsLimited_WithNull_ReturnsAllClaims()
+    {
+        var token = JwtTokenHelper.CreateDefaultToken();
+
+        using var command = fixture.Connection.CreateCommand();
+        command.CommandText = "SELECT * FROM extract_claims_limited($token, NULL::INTEGER)";
+        command.Parameters.Add(new DuckDBParameter("token", token));
+
+        using var reader = command.ExecuteReader();
+        var count = 0;
+        while (reader.Read()) count++;
+
+        await Assert.That(count).IsGreaterThanOrEqualTo(4);
+    }
 }

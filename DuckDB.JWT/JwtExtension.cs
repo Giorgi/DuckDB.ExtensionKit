@@ -17,6 +17,12 @@ public static partial class JwtExtension
 
         connection.RegisterTableFunction("extract_claims_from_jwt", (string jwt) => ExtractClaimsFromJwt(jwt),
                                          c => new { claim_name = c.Key, claim_value = c.Value });
+
+        connection.RegisterTableFunction("jwt_info", (string jwt) => GetJwtInfo(jwt),
+                                         (JwtInfo info) => new { issuer = info.Issuer, claim_count = info.ClaimCount, is_expired = info.IsExpired });
+
+        connection.RegisterTableFunction("extract_claims_limited", (string jwt, int? limit) => ExtractClaimsLimited(jwt, limit),
+                                         c => new { claim_name = c.Key, claim_value = c.Value });
     }
 
     private static bool IsJwt(string jwt)
@@ -57,5 +63,28 @@ public static partial class JwtExtension
         var jwtHandler = new JwtSecurityTokenHandler();
         var token = jwtHandler.ReadJwtToken(jwt);
         return token.Claims.ToDictionary(c => c.Type, c => c.Value);
+    }
+
+    private static Dictionary<string, string> ExtractClaimsLimited(string jwt, int? limit)
+    {
+        var jwtHandler = new JwtSecurityTokenHandler();
+        var token = jwtHandler.ReadJwtToken(jwt);
+        var claims = token.Claims.AsEnumerable();
+        if (limit.HasValue)
+            claims = claims.Take(limit.Value);
+        return claims.ToDictionary(c => c.Type, c => c.Value);
+    }
+
+    private record JwtInfo(string Issuer, int ClaimCount, bool IsExpired);
+
+    private static JwtInfo[] GetJwtInfo(string jwt)
+    {
+        var jwtHandler = new JwtSecurityTokenHandler();
+        var token = jwtHandler.ReadJwtToken(jwt);
+        return [new JwtInfo(
+            token.Issuer ?? "",
+            token.Claims.Count(),
+            token.ValidTo < DateTime.UtcNow
+        )];
     }
 }
