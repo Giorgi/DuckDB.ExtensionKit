@@ -3,6 +3,7 @@ using DuckDB.ExtensionKit.Native;
 using DuckDB.ExtensionKit.ScalarFunctions;
 using DuckDB.ExtensionKit.TableFunctions;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 
 namespace DuckDB.JWT;
 
@@ -21,7 +22,10 @@ public static partial class JwtExtension
         connection.RegisterTableFunction("jwt_info", (string jwt) => GetJwtInfo(jwt),
                                          (JwtInfo info) => new { issuer = info.Issuer, claim_count = info.ClaimCount, is_expired = info.IsExpired });
 
-        connection.RegisterTableFunction("extract_claims_limited", (string jwt, int? limit) => ExtractClaimsLimited(jwt, limit),
+        connection.RegisterTableFunction("extract_claims_limited", (string jwt, [Named("max_rows")] int? limit) => ExtractClaimsLimited(jwt, limit),
+                                         c => new { claim_name = c.Key, claim_value = c.Value });
+
+        connection.RegisterTableFunction("extract_claims_filtered", (string jwt, [Named] string? prefix, [Named("max_rows")] int? limit) => ExtractClaimsFiltered(jwt, prefix, limit),
                                          c => new { claim_name = c.Key, claim_value = c.Value });
     }
 
@@ -70,6 +74,18 @@ public static partial class JwtExtension
         var jwtHandler = new JwtSecurityTokenHandler();
         var token = jwtHandler.ReadJwtToken(jwt);
         var claims = token.Claims.AsEnumerable();
+        if (limit.HasValue)
+            claims = claims.Take(limit.Value);
+        return claims.ToDictionary(c => c.Type, c => c.Value);
+    }
+
+    private static Dictionary<string, string> ExtractClaimsFiltered(string jwt, string? prefix, int? limit)
+    {
+        var jwtHandler = new JwtSecurityTokenHandler();
+        var token = jwtHandler.ReadJwtToken(jwt);
+        var claims = token.Claims.AsEnumerable();
+        if (prefix is not null)
+            claims = claims.Where(c => c.Type.StartsWith(prefix));
         if (limit.HasValue)
             claims = claims.Take(limit.Value);
         return claims.ToDictionary(c => c.Type, c => c.Value);

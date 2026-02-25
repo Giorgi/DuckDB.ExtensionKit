@@ -61,9 +61,18 @@ public static partial class MyExtension
         connection.RegisterTableFunction("get_items",
             (string category) => GetItems(category),
             (Item item) => new { name = item.Name, price = item.Price });
+
+        // Table function with named parameters
+        // SQL: SELECT * FROM get_items('toys', max_rows := 10)
+        connection.RegisterTableFunction("get_items_filtered",
+            (string category, [Named("max_rows")] int? limit) =>
+                GetItems(category).Take(limit ?? int.MaxValue),
+            (Item item) => new { name = item.Name, price = item.Price });
     }
 }
 ```
+
+Named parameters use the `[Named]` attribute on lambda parameters. By default the SQL parameter name matches the C# name; use `[Named("custom_name")]` to override it. Named parameters are optional - omitted ones receive `null`.
 
 The source generator automatically creates the native entry point (`myextension_init_c_api`).
 

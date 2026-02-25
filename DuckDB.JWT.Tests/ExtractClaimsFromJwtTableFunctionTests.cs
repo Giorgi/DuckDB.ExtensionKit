@@ -180,7 +180,7 @@ public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixtu
         var token = JwtTokenHelper.CreateDefaultToken();
 
         using var command = fixture.Connection.CreateCommand();
-        command.CommandText = "SELECT * FROM extract_claims_limited($token, 2)";
+        command.CommandText = "SELECT * FROM extract_claims_limited($token, max_rows := 2)";
         command.Parameters.Add(new DuckDBParameter("token", token));
 
         using var reader = command.ExecuteReader();
@@ -191,12 +191,91 @@ public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixtu
     }
 
     [Test]
-    public async Task ExtractClaimsLimited_WithNull_ReturnsAllClaims()
+    public async Task ExtractClaimsLimited_Omitted_ReturnsAllClaims()
     {
         var token = JwtTokenHelper.CreateDefaultToken();
 
         using var command = fixture.Connection.CreateCommand();
-        command.CommandText = "SELECT * FROM extract_claims_limited($token, NULL::INTEGER)";
+        command.CommandText = "SELECT * FROM extract_claims_limited($token)";
+        command.Parameters.Add(new DuckDBParameter("token", token));
+
+        using var reader = command.ExecuteReader();
+        var count = 0;
+        while (reader.Read()) count++;
+
+        await Assert.That(count).IsGreaterThanOrEqualTo(4);
+    }
+
+    [Test]
+    public async Task ExtractClaimsLimited_ExplicitNull_ReturnsAllClaims()
+    {
+        var token = JwtTokenHelper.CreateDefaultToken();
+
+        using var command = fixture.Connection.CreateCommand();
+        command.CommandText = "SELECT * FROM extract_claims_limited($token, max_rows := NULL)";
+        command.Parameters.Add(new DuckDBParameter("token", token));
+
+        using var reader = command.ExecuteReader();
+        var count = 0;
+        while (reader.Read()) count++;
+
+        await Assert.That(count).IsGreaterThanOrEqualTo(4);
+    }
+
+    [Test]
+    public async Task ExtractClaimsFiltered_WithPrefixAndLimit_ReturnsFilteredClaims()
+    {
+        var token = JwtTokenHelper.CreateToken(
+            ("role_admin", "true"),
+            ("role_user", "true"),
+            ("role_dev", "true"),
+            ("name", "John")
+        );
+
+        using var command = fixture.Connection.CreateCommand();
+        command.CommandText = "SELECT * FROM extract_claims_filtered($token, prefix := 'role_', max_rows := 2)";
+        command.Parameters.Add(new DuckDBParameter("token", token));
+
+        using var reader = command.ExecuteReader();
+        var claims = new Dictionary<string, string>();
+        while (reader.Read())
+            claims[reader.GetString(0)] = reader.GetString(1);
+
+        await Assert.That(claims.Count).IsEqualTo(2);
+        foreach (var key in claims.Keys)
+            await Assert.That(key).StartsWith("role_");
+    }
+
+    [Test]
+    public async Task ExtractClaimsFiltered_PrefixOnly_ReturnsAllMatching()
+    {
+        var token = JwtTokenHelper.CreateToken(
+            ("role_admin", "true"),
+            ("role_user", "true"),
+            ("name", "John")
+        );
+
+        using var command = fixture.Connection.CreateCommand();
+        command.CommandText = "SELECT * FROM extract_claims_filtered($token, prefix := 'role_')";
+        command.Parameters.Add(new DuckDBParameter("token", token));
+
+        using var reader = command.ExecuteReader();
+        var claims = new Dictionary<string, string>();
+        while (reader.Read())
+            claims[reader.GetString(0)] = reader.GetString(1);
+
+        await Assert.That(claims.Count).IsEqualTo(2);
+        await Assert.That(claims).ContainsKey("role_admin");
+        await Assert.That(claims).ContainsKey("role_user");
+    }
+
+    [Test]
+    public async Task ExtractClaimsFiltered_NoNamedParams_ReturnsAllClaims()
+    {
+        var token = JwtTokenHelper.CreateDefaultToken();
+
+        using var command = fixture.Connection.CreateCommand();
+        command.CommandText = "SELECT * FROM extract_claims_filtered($token)";
         command.Parameters.Add(new DuckDBParameter("token", token));
 
         using var reader = command.ExecuteReader();

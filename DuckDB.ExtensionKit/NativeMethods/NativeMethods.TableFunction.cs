@@ -15,6 +15,9 @@ public static partial class NativeMethods
         internal static void DuckDBTableFunctionAddParameter(IntPtr tableFunction, DuckDBLogicalType type) =>
             Api.duckdb_table_function_add_parameter(tableFunction, type.DangerousGetHandle());
 
+        internal static void DuckDBTableFunctionAddNamedParameter(IntPtr tableFunction, byte* name, DuckDBLogicalType type) =>
+            Api.duckdb_table_function_add_named_parameter(tableFunction, name, type.DangerousGetHandle());
+
         internal static void DuckDBTableFunctionSetExtraInfo(IntPtr tableFunction, IntPtr extraInfo, delegate* unmanaged[Cdecl]<void*, void> destroy) =>
             Api.duckdb_table_function_set_extra_info(tableFunction, extraInfo.ToPointer(), destroy);
 
@@ -39,6 +42,9 @@ public static partial class NativeMethods
 
         internal static IntPtr DuckDBBindGetParameter(IntPtr info, ulong index) =>
             Api.duckdb_bind_get_parameter(info, index);
+
+        internal static IntPtr DuckDBBindGetNamedParameter(IntPtr info, byte* name) =>
+            Api.duckdb_bind_get_named_parameter(info, name);
 
         internal static void DuckDBBindAddResultColumn(IntPtr info, byte* name, DuckDBLogicalType type) =>
             Api.duckdb_bind_add_result_column(info, name, type.DangerousGetHandle());

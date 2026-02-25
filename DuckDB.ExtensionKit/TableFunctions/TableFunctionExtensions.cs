@@ -4,6 +4,7 @@ using DuckDB.ExtensionKit.Extensions;
 using DuckDB.ExtensionKit.Native;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace DuckDB.ExtensionKit.TableFunctions;
 
@@ -27,21 +28,36 @@ public static class TableFunctionExtensions
 
     public static void RegisterTableFunction<T1, T2, T3, T4, T5, T6, T7, T8>(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback) => connection.RegisterTableFunctionInternal(name, resultCallback, mapperCallback, typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7), typeof(T8));
 
-    private static unsafe void RegisterTableFunctionInternal(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback, params Type[] parameterTypes)
+    private static void RegisterTableFunctionInternal(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback, params Type[] parameterTypes)
+    {
+        var logicalTypes = Array.ConvertAll(parameterTypes, TypeExtensions.GetLogicalType);
+        connection.RegisterTableFunctionInternal(name, (positional, _) => resultCallback(positional), mapperCallback, logicalTypes, []);
+    }
+
+    internal static unsafe void RegisterTableFunctionInternal(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, IReadOnlyDictionary<string, IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback, DuckDBLogicalType[] positionalLogicalTypes, NamedParameterDefinition[] namedParameters)
     {
         var function = NativeMethods.NativeMethods.TableFunction.DuckDBCreateTableFunction();
-        fixed (byte* namePtr = System.Text.Encoding.UTF8.GetBytes(name + "\0"))
+        fixed (byte* namePtr = Encoding.UTF8.GetBytes(name + "\0"))
         {
             NativeMethods.NativeMethods.TableFunction.DuckDBTableFunctionSetName(function, namePtr);
         }
 
-        foreach (var type in parameterTypes)
+        foreach (var logicalType in positionalLogicalTypes)
         {
-            using var logicalType = type.GetLogicalType();
             NativeMethods.NativeMethods.TableFunction.DuckDBTableFunctionAddParameter(function, logicalType);
+            logicalType.Dispose();
         }
 
-        var tableFunctionInfo = new TableFunctionInfo(resultCallback, mapperCallback);
+        foreach (var param in namedParameters)
+        {
+            using var logicalType = param.Type.GetLogicalType();
+            fixed (byte* paramNamePtr = Encoding.UTF8.GetBytes(param.Name + "\0"))
+            {
+                NativeMethods.NativeMethods.TableFunction.DuckDBTableFunctionAddNamedParameter(function, paramNamePtr, logicalType);
+            }
+        }
+
+        var tableFunctionInfo = new TableFunctionInfo(resultCallback, mapperCallback, Array.ConvertAll(namedParameters, p => p.Name));
 
         NativeMethods.NativeMethods.TableFunction.DuckDBTableFunctionSetBind(function, &Bind);
         NativeMethods.NativeMethods.TableFunction.DuckDBTableFunctionSetInit(function, &Init);
@@ -62,6 +78,7 @@ public static class TableFunctionExtensions
     private static unsafe void Bind(IntPtr info)
     {
         IDuckDBValueReader[] parameters = [];
+        Dictionary<string, IDuckDBValueReader> named = [];
         try
         {
             var handle = GCHandle.FromIntPtr(new IntPtr(NativeMethods.NativeMethods.TableFunction.DuckDBBindGetExtraInfo(info)));
@@ -79,12 +96,24 @@ public static class TableFunctionExtensions
                 parameters[i] = new DuckDBValue(value);
             }
 
-            var tableFunctionData = functionInfo.Bind(parameters);
+            // When a named parameter is omitted in SQL, duckdb_bind_get_named_parameter returns a null pointer.
+            // We substitute it with NullValueReader so CompileValueReader's IsNull() check
+            // correctly handles it (returns default for nullable, throws for non-nullable).
+            foreach (var paramName in functionInfo.NamedParameterNames)
+            {
+                fixed (byte* paramNamePtr = Encoding.UTF8.GetBytes(paramName + "\0"))
+                {
+                    var value = NativeMethods.NativeMethods.TableFunction.DuckDBBindGetNamedParameter(info, paramNamePtr);
+                    named[paramName] = value == IntPtr.Zero ? NullValueReader.Instance : new DuckDBValue(value);
+                }
+            }
+
+            var tableFunctionData = functionInfo.Bind(parameters, named);
 
             foreach (var columnInfo in tableFunctionData.Columns)
             {
                 using var logicalType = columnInfo.Type.GetLogicalType();
-                fixed (byte* columnNamePtr = System.Text.Encoding.UTF8.GetBytes(columnInfo.Name + "\0"))
+                fixed (byte* columnNamePtr = Encoding.UTF8.GetBytes(columnInfo.Name + "\0"))
                 {
                     NativeMethods.NativeMethods.TableFunction.DuckDBBindAddResultColumn(info, columnNamePtr, logicalType);
                 }
@@ -96,7 +125,7 @@ public static class TableFunctionExtensions
         }
         catch (Exception ex)
         {
-            fixed (byte* errorPtr = System.Text.Encoding.UTF8.GetBytes(ex.Message + "\0"))
+            fixed (byte* errorPtr = Encoding.UTF8.GetBytes(ex.Message + "\0"))
             {
                 NativeMethods.NativeMethods.TableFunction.DuckDBBindSetError(info, errorPtr);
             }
@@ -106,6 +135,11 @@ public static class TableFunctionExtensions
             foreach (var parameter in parameters)
             {
                 (parameter as IDisposable)?.Dispose();
+            }
+
+            foreach (var namedParam in named.Values)
+            {
+                (namedParam as IDisposable)?.Dispose();
             }
         }
     }
@@ -165,7 +199,7 @@ public static class TableFunctionExtensions
         }
         catch (Exception ex)
         {
-            fixed (byte* errorPtr = System.Text.Encoding.UTF8.GetBytes(ex.Message + "\0"))
+            fixed (byte* errorPtr = Encoding.UTF8.GetBytes(ex.Message + "\0"))
             {
                 NativeMethods.NativeMethods.TableFunction.DuckDBFunctionSetError(info, errorPtr);
             }
@@ -186,4 +220,11 @@ public static class TableFunctionExtensions
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static unsafe void DestroyExtraInfo(void* pointer) => new IntPtr(pointer).FreeHandle();
+
+    private class NullValueReader : IDuckDBValueReader
+    {
+        public static readonly NullValueReader Instance = new();
+        public bool IsNull() => true;
+        public T GetValue<T>() => throw new InvalidOperationException("Cannot read value from a null parameter.");
+    }
 }
