@@ -16,6 +16,8 @@ public static partial class JwtExtension
 
         connection.RegisterScalarFunction<string, string, string?>("extract_claim_from_jwt", ExtractClaimFromJwt);
 
+        connection.RegisterScalarFunction<string, bool>("has_jwt_claims", HasJwtClaims);
+
         connection.RegisterTableFunction("extract_claims_from_jwt", (string jwt) => ExtractClaimsFromJwt(jwt),
                                          c => new { claim_name = c.Key, claim_value = c.Value });
 
@@ -53,6 +55,15 @@ public static partial class JwtExtension
         {
             return false;
         }
+    }
+
+    private static bool HasJwtClaims(string[] args)
+    {
+        var jwtHandler = new JwtSecurityTokenHandler();
+        var token = jwtHandler.ReadJwtToken(args[0]);
+        var claimTypes = token.Claims.Select(c => c.Type).ToHashSet();
+
+        return claimTypes.IsSupersetOf(args[1..]);
     }
 
     private static string? ExtractClaimFromJwt(string jwt, string claim)
