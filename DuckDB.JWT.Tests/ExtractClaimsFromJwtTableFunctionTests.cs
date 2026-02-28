@@ -2,28 +2,30 @@ using DuckDB.NET.Data;
 
 namespace DuckDB.JWT.Tests;
 
-[ClassDataSource<DuckDBExtensionFixture>(Shared = SharedType.PerClass)]
-public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixture)
+[ClassDataSource<DuckDBExtensionFixture>(Shared = SharedType.PerAssembly)]
+public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixture) : IDisposable
 {
+    private readonly DuckDBConnection connection = fixture.CreateConnection();
+
     [Test]
     public async Task ExtractClaimsFromJwt_DefaultToken_ReturnsAllClaims()
     {
         var token = JwtTokenHelper.CreateDefaultToken();
-        
-        using var command = fixture.Connection.CreateCommand();
+
+        using var command = connection.CreateCommand();
         command.CommandText = "SELECT * FROM extract_claims_from_jwt($token) ORDER BY claim_name";
         command.Parameters.Add(new DuckDBParameter("token", token));
-        
+
         using var reader = command.ExecuteReader();
         var claims = new Dictionary<string, string>();
-        
+
         while (reader.Read())
         {
             var claimName = reader.GetString(0);
             var claimValue = reader.GetString(1);
             claims[claimName] = claimValue;
         }
-        
+
         await Assert.That(claims).Count().IsGreaterThanOrEqualTo(4);
         await Assert.That(claims).ContainsKey("sub");
         await Assert.That(claims["sub"]).IsEqualTo("1234567890");
@@ -41,21 +43,21 @@ public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixtu
             ("role", "developer"),
             ("department", "Engineering")
         );
-        
-        using var command = fixture.Connection.CreateCommand();
+
+        using var command = connection.CreateCommand();
         command.CommandText = "SELECT * FROM extract_claims_from_jwt($token)";
         command.Parameters.Add(new DuckDBParameter("token", token));
-        
+
         using var reader = command.ExecuteReader();
         var claims = new Dictionary<string, string>();
-        
+
         while (reader.Read())
         {
             var claimName = reader.GetString(0);
             var claimValue = reader.GetString(1);
             claims[claimName] = claimValue;
         }
-        
+
         await Assert.That(claims).ContainsKey("email");
         await Assert.That(claims["email"]).IsEqualTo("user@example.com");
         await Assert.That(claims).ContainsKey("role");
@@ -68,20 +70,20 @@ public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixtu
     public async Task ExtractClaimsFromJwt_FilterClaims_ReturnsFilteredResults()
     {
         var token = JwtTokenHelper.CreateDefaultToken();
-        
-        using var command = fixture.Connection.CreateCommand();
+
+        using var command = connection.CreateCommand();
         command.CommandText = @"
-            SELECT claim_name, claim_value 
+            SELECT claim_name, claim_value
             FROM extract_claims_from_jwt($token)
             WHERE claim_name = 'name'";
         command.Parameters.Add(new DuckDBParameter("token", token));
-        
+
         using var reader = command.ExecuteReader();
         reader.Read();
-        
+
         await Assert.That(reader.GetString(0)).IsEqualTo("name");
         await Assert.That(reader.GetString(1)).IsEqualTo("John Doe");
-        
+
         var hasMore = reader.Read();
         await Assert.That(hasMore).IsFalse();
     }
@@ -90,15 +92,15 @@ public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixtu
     public async Task ExtractClaimsFromJwt_JoinWithOtherTable_Works()
     {
         var token = JwtTokenHelper.CreateDefaultToken();
-        
-        using var command = fixture.Connection.CreateCommand();
+
+        using var command = connection.CreateCommand();
         command.CommandText = @"
             WITH expected_claims AS (
                 SELECT 'name' as claim_name, 'John Doe' as expected_value
                 UNION ALL
                 SELECT 'sub', '1234567890'
             )
-            SELECT 
+            SELECT
                 ec.claim_name,
                 ec.expected_value,
                 jwt.claim_value,
@@ -108,11 +110,11 @@ public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixtu
                 ON ec.claim_name = jwt.claim_name
             ORDER BY ec.claim_name";
         command.Parameters.Add(new DuckDBParameter("token", token));
-        
+
         using var reader = command.ExecuteReader();
         var allMatch = true;
         var recordCount = 0;
-        
+
         while (reader.Read())
         {
             recordCount++;
@@ -122,7 +124,7 @@ public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixtu
                 allMatch = false;
             }
         }
-        
+
         await Assert.That(recordCount).IsEqualTo(2);
         await Assert.That(allMatch).IsTrue();
     }
@@ -135,22 +137,22 @@ public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixtu
             ("role2", "user"),
             ("role3", "developer")
         );
-        
-        using var command = fixture.Connection.CreateCommand();
+
+        using var command = connection.CreateCommand();
         command.CommandText = @"
-            SELECT 
+            SELECT
                 COUNT(*) as total_claims,
                 STRING_AGG(claim_name, ', ' ORDER BY claim_name) as all_claim_names
             FROM extract_claims_from_jwt($token)
             WHERE claim_name LIKE 'role%'";
         command.Parameters.Add(new DuckDBParameter("token", token));
-        
+
         using var reader = command.ExecuteReader();
         reader.Read();
-        
+
         var totalClaims = reader.GetInt64(0);
         var claimNames = reader.GetString(1);
-        
+
         await Assert.That(totalClaims).IsEqualTo(3);
         await Assert.That(claimNames).Contains("role1");
         await Assert.That(claimNames).Contains("role2");
@@ -162,7 +164,7 @@ public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixtu
     {
         var token = JwtTokenHelper.CreateDefaultToken();
 
-        using var command = fixture.Connection.CreateCommand();
+        using var command = connection.CreateCommand();
         command.CommandText = "SELECT issuer, claim_count, is_expired FROM jwt_info($token)";
         command.Parameters.Add(new DuckDBParameter("token", token));
 
@@ -179,7 +181,7 @@ public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixtu
     {
         var token = JwtTokenHelper.CreateDefaultToken();
 
-        using var command = fixture.Connection.CreateCommand();
+        using var command = connection.CreateCommand();
         command.CommandText = "SELECT * FROM extract_claims_limited($token, max_rows := 2)";
         command.Parameters.Add(new DuckDBParameter("token", token));
 
@@ -195,7 +197,7 @@ public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixtu
     {
         var token = JwtTokenHelper.CreateDefaultToken();
 
-        using var command = fixture.Connection.CreateCommand();
+        using var command = connection.CreateCommand();
         command.CommandText = "SELECT * FROM extract_claims_limited($token)";
         command.Parameters.Add(new DuckDBParameter("token", token));
 
@@ -211,7 +213,7 @@ public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixtu
     {
         var token = JwtTokenHelper.CreateDefaultToken();
 
-        using var command = fixture.Connection.CreateCommand();
+        using var command = connection.CreateCommand();
         command.CommandText = "SELECT * FROM extract_claims_limited($token, max_rows := NULL)";
         command.Parameters.Add(new DuckDBParameter("token", token));
 
@@ -232,7 +234,7 @@ public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixtu
             ("name", "John")
         );
 
-        using var command = fixture.Connection.CreateCommand();
+        using var command = connection.CreateCommand();
         command.CommandText = "SELECT * FROM extract_claims_filtered($token, prefix := 'role_', max_rows := 2)";
         command.Parameters.Add(new DuckDBParameter("token", token));
 
@@ -255,7 +257,7 @@ public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixtu
             ("name", "John")
         );
 
-        using var command = fixture.Connection.CreateCommand();
+        using var command = connection.CreateCommand();
         command.CommandText = "SELECT * FROM extract_claims_filtered($token, prefix := 'role_')";
         command.Parameters.Add(new DuckDBParameter("token", token));
 
@@ -274,7 +276,7 @@ public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixtu
     {
         var token = JwtTokenHelper.CreateDefaultToken();
 
-        using var command = fixture.Connection.CreateCommand();
+        using var command = connection.CreateCommand();
         command.CommandText = "SELECT * FROM extract_claims_filtered($token)";
         command.Parameters.Add(new DuckDBParameter("token", token));
 
@@ -284,4 +286,6 @@ public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixtu
 
         await Assert.That(count).IsGreaterThanOrEqualTo(4);
     }
+
+    public void Dispose() => connection.Dispose();
 }

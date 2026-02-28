@@ -2,15 +2,17 @@ using DuckDB.NET.Data;
 
 namespace DuckDB.JWT.Tests;
 
-[ClassDataSource<DuckDBExtensionFixture>(Shared = SharedType.PerClass)]
-public class HasJwtClaimsFunctionTests(DuckDBExtensionFixture fixture)
+[ClassDataSource<DuckDBExtensionFixture>(Shared = SharedType.PerAssembly)]
+public class HasJwtClaimsFunctionTests(DuckDBExtensionFixture fixture) : IDisposable
 {
+    private readonly DuckDBConnection connection = fixture.CreateConnection();
+
     [Test]
     public async Task HasJwtClaims_AllClaimsPresent_ReturnsTrue()
     {
         var token = JwtTokenHelper.CreateDefaultToken();
 
-        using var command = fixture.Connection.CreateCommand();
+        using var command = connection.CreateCommand();
         command.CommandText = "SELECT has_jwt_claims($token, 'sub', 'name', 'admin')";
         command.Parameters.Add(new DuckDBParameter("token", token));
 
@@ -24,7 +26,7 @@ public class HasJwtClaimsFunctionTests(DuckDBExtensionFixture fixture)
     {
         var token = JwtTokenHelper.CreateDefaultToken();
 
-        using var command = fixture.Connection.CreateCommand();
+        using var command = connection.CreateCommand();
         command.CommandText = "SELECT has_jwt_claims($token, 'sub', 'nonexistent')";
         command.Parameters.Add(new DuckDBParameter("token", token));
 
@@ -38,7 +40,7 @@ public class HasJwtClaimsFunctionTests(DuckDBExtensionFixture fixture)
     {
         var token = JwtTokenHelper.CreateDefaultToken();
 
-        using var command = fixture.Connection.CreateCommand();
+        using var command = connection.CreateCommand();
         command.CommandText = "SELECT has_jwt_claims($token, 'name')";
         command.Parameters.Add(new DuckDBParameter("token", token));
 
@@ -56,7 +58,7 @@ public class HasJwtClaimsFunctionTests(DuckDBExtensionFixture fixture)
             ("department", "IT")
         );
 
-        using var command = fixture.Connection.CreateCommand();
+        using var command = connection.CreateCommand();
         command.CommandText = @"
             SELECT
                 has_jwt_claims($token, 'email', 'role') as has_both,
@@ -69,4 +71,6 @@ public class HasJwtClaimsFunctionTests(DuckDBExtensionFixture fixture)
         await Assert.That(reader.GetBoolean(0)).IsTrue();
         await Assert.That(reader.GetBoolean(1)).IsFalse();
     }
+
+    public void Dispose() => connection.Dispose();
 }

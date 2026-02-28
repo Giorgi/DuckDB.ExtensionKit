@@ -4,31 +4,39 @@ namespace DuckDB.JWT.Tests;
 
 public class DuckDBExtensionFixture : IDisposable
 {
-    private bool disposed;
+    private readonly string extensionDirectory;
 
     public DuckDBExtensionFixture()
     {
-        var extensionDirectory = Path.Combine(AppContext.BaseDirectory, "extensions-install");
-
-        try
-        {
-            Directory.Delete(extensionDirectory, true);
-        }
-        catch (Exception) { }
+        extensionDirectory = Path.Combine(AppContext.BaseDirectory, "extensions-install");
 
         Directory.CreateDirectory(extensionDirectory);
 
-        // Allow unsigned extensions and set custom extension directory
-        var connectionString = $"DataSource=:memory:;allow_unsigned_extensions=true;extension_directory={extensionDirectory}";
-        Connection = new DuckDBConnection(connectionString);
-        Connection.Open();
-
-        LoadJwtExtension();
+        // Install extension once using a temporary connection
+        using var connection = CreateConnectionCore();
+        InstallExtension(connection);
     }
 
-    public DuckDBConnection Connection { get; }
+    public DuckDBConnection CreateConnection()
+    {
+        var connection = CreateConnectionCore();
 
-    private void LoadJwtExtension()
+        using var command = connection.CreateCommand();
+        command.CommandText = "LOAD jwt;";
+        command.ExecuteNonQuery();
+
+        return connection;
+    }
+
+    private DuckDBConnection CreateConnectionCore()
+    {
+        var connectionString = $"DataSource=:memory:;allow_unsigned_extensions=true;extension_directory={extensionDirectory}";
+        var connection = new DuckDBConnection(connectionString);
+        connection.Open();
+        return connection;
+    }
+
+    private static void InstallExtension(DuckDBConnection connection)
     {
         var extensionPath = Path.Combine(AppContext.BaseDirectory, "extensions", "jwt.duckdb_extension");
 
@@ -37,21 +45,17 @@ public class DuckDBExtensionFixture : IDisposable
             throw new FileNotFoundException($"JWT extension not found at: {extensionPath}");
         }
 
-        using var command = Connection.CreateCommand();
+        using var command = connection.CreateCommand();
         command.CommandText = $"INSTALL '{extensionPath}';";
-        command.ExecuteNonQuery();
-
-        command.CommandText = "LOAD jwt;";
         command.ExecuteNonQuery();
     }
 
     public void Dispose()
     {
-        if (disposed) return;
-
-        Connection?.Dispose();
-
-        disposed = true;
-        GC.SuppressFinalize(this);
+        try
+        {
+            Directory.Delete(extensionDirectory, true);
+        }
+        catch (Exception) { }
     }
 }

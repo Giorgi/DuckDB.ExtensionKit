@@ -2,20 +2,22 @@ using DuckDB.NET.Data;
 
 namespace DuckDB.JWT.Tests;
 
-[ClassDataSource<DuckDBExtensionFixture>(Shared = SharedType.PerClass)]
-public class IsJwtFunctionTests(DuckDBExtensionFixture fixture)
+[ClassDataSource<DuckDBExtensionFixture>(Shared = SharedType.PerAssembly)]
+public class IsJwtFunctionTests(DuckDBExtensionFixture fixture) : IDisposable
 {
+    private readonly DuckDBConnection connection = fixture.CreateConnection();
+
     [Test]
     public async Task IsJwt_ValidToken_ReturnsTrue()
     {
         var token = JwtTokenHelper.CreateDefaultToken();
-        
-        using var command = fixture.Connection.CreateCommand();
+
+        using var command = connection.CreateCommand();
         command.CommandText = "SELECT is_jwt($token) as result";
         command.Parameters.Add(new DuckDBParameter("token", token));
-        
+
         var result = command.ExecuteScalar();
-        
+
         await Assert.That(result).IsEqualTo(true);
     }
 
@@ -23,13 +25,13 @@ public class IsJwtFunctionTests(DuckDBExtensionFixture fixture)
     public async Task IsJwt_InvalidToken_ReturnsFalse()
     {
         const string invalidToken = "not.a.jwt";
-        
-        using var command = fixture.Connection.CreateCommand();
+
+        using var command = connection.CreateCommand();
         command.CommandText = "SELECT is_jwt($token) as result";
         command.Parameters.Add(new DuckDBParameter("token", invalidToken));
-        
+
         var result = command.ExecuteScalar();
-        
+
         await Assert.That(result).IsEqualTo(false);
     }
 
@@ -37,13 +39,13 @@ public class IsJwtFunctionTests(DuckDBExtensionFixture fixture)
     public async Task IsJwt_EmptyString_ReturnsFalse()
     {
         const string emptyToken = "";
-        
-        using var command = fixture.Connection.CreateCommand();
+
+        using var command = connection.CreateCommand();
         command.CommandText = "SELECT is_jwt($token) as result";
         command.Parameters.Add(new DuckDBParameter("token", emptyToken));
-        
+
         var result = command.ExecuteScalar();
-        
+
         await Assert.That(result).IsEqualTo(false);
     }
 
@@ -51,28 +53,30 @@ public class IsJwtFunctionTests(DuckDBExtensionFixture fixture)
     public async Task IsJwt_MultipleTokensInTable_ReturnsCorrectResults()
     {
         var validToken = JwtTokenHelper.CreateDefaultToken();
-        
-        using var command = fixture.Connection.CreateCommand();
+
+        using var command = connection.CreateCommand();
         command.CommandText = @"
-            SELECT is_jwt(token) as result 
-            FROM (VALUES 
-                ($validToken), 
-                ('invalid.token'), 
-                ('') 
+            SELECT is_jwt(token) as result
+            FROM (VALUES
+                ($validToken),
+                ('invalid.token'),
+                ('')
             ) AS t(token)";
         command.Parameters.Add(new DuckDBParameter("validToken", validToken));
-        
+
         using var reader = command.ExecuteReader();
         var results = new List<bool>();
-        
+
         while (reader.Read())
         {
             results.Add(reader.GetBoolean(0));
         }
-        
+
         await Assert.That(results).Count().IsEqualTo(3);
         await Assert.That(results[0]).IsTrue();
         await Assert.That(results[1]).IsFalse();
         await Assert.That(results[2]).IsFalse();
     }
+
+    public void Dispose() => connection.Dispose();
 }
