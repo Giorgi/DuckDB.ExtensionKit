@@ -62,9 +62,9 @@ public enum DuckDBType : uint
     Bit = 29,
     TimeTz = 30,
     TimestampTz = 31,
-    VarInt = 34,
-    SqlNull = 35,
-    Any = 36
+    Any = 34,
+    VarInt = 35,
+    SqlNull = 36
 }
 
 public enum DuckDBStatementType : int
