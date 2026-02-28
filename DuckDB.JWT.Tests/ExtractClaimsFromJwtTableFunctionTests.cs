@@ -153,7 +153,7 @@ public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixtu
         var totalClaims = reader.GetInt64(0);
         var claimNames = reader.GetString(1);
 
-        await Assert.That(totalClaims).IsEqualTo(3);
+        await Assert.That(totalClaims).IsEqualTo(3L);
         await Assert.That(claimNames).Contains("role1");
         await Assert.That(claimNames).Contains("role2");
         await Assert.That(claimNames).Contains("role3");
@@ -243,7 +243,7 @@ public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixtu
         while (reader.Read())
             claims[reader.GetString(0)] = reader.GetString(1);
 
-        await Assert.That(claims.Count).IsEqualTo(2);
+        await Assert.That(claims).Count().IsEqualTo(2);
         foreach (var key in claims.Keys)
             await Assert.That(key).StartsWith("role_");
     }
@@ -266,7 +266,7 @@ public class ExtractClaimsFromJwtTableFunctionTests(DuckDBExtensionFixture fixtu
         while (reader.Read())
             claims[reader.GetString(0)] = reader.GetString(1);
 
-        await Assert.That(claims.Count).IsEqualTo(2);
+        await Assert.That(claims).Count().IsEqualTo(2);
         await Assert.That(claims).ContainsKey("role_admin");
         await Assert.That(claims).ContainsKey("role_user");
     }

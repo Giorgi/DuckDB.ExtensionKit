@@ -2,6 +2,7 @@
 using DuckDB.ExtensionKit.Native;
 using DuckDB.ExtensionKit.ScalarFunctions;
 using DuckDB.ExtensionKit.TableFunctions;
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 
@@ -29,6 +30,12 @@ public static partial class JwtExtension
 
         connection.RegisterTableFunction("extract_claims_filtered", (string jwt, [Named] string? prefix, [Named("max_rows")] int? limit) => ExtractClaimsFiltered(jwt, prefix, limit),
                                          c => new { claim_name = c.Key, claim_value = c.Value });
+
+        // Test-only functions to exercise DuckDBType.Any (object) scalar function support
+        connection.RegisterScalarFunction<object, string>("net_type_name", NetTypeName);
+        connection.RegisterScalarFunction<object, string, string>("net_format", NetFormat);
+        connection.RegisterScalarFunction<object, string, string, string>("net_format_culture", NetFormatCulture);
+        connection.RegisterScalarFunction<object, string>("net_concat", (object[] args) => string.Join(", ", args));
     }
 
     private static bool IsJwt(string jwt)
@@ -114,4 +121,16 @@ public static partial class JwtExtension
             token.ValidTo < DateTime.UtcNow
         )];
     }
+
+    private static string NetTypeName(object value) => value.GetType().Name;
+
+    private static string NetFormat(object value, string format)
+        => value is IFormattable f
+            ? f.ToString(format, CultureInfo.InvariantCulture)
+            : value?.ToString() ?? "";
+
+    private static string NetFormatCulture(object value, string format, string culture)
+        => value is IFormattable f
+            ? f.ToString(format, CultureInfo.GetCultureInfo(culture))
+            : value?.ToString() ?? "";
 }
