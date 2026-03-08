@@ -259,7 +259,7 @@ public unsafe struct DuckDBExtApiV1
     public delegate* unmanaged[Cdecl]<nint*, void> duckdb_destroy_scalar_function;
     public delegate* unmanaged[Cdecl]<nint, byte*, void> duckdb_scalar_function_set_name;
     public delegate* unmanaged[Cdecl]<nint, nint, void> duckdb_scalar_function_set_varargs;
-    public delegate* unmanaged[Cdecl]<nint, void> duckdb_scalar_function_set_special_handling;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, void> duckdb_scalar_function_set_special_handling;
     public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, void> duckdb_scalar_function_set_volatile;
     public delegate* unmanaged[Cdecl]<nint, nint, void> duckdb_scalar_function_add_parameter;
     public delegate* unmanaged[Cdecl]<nint, nint, void> duckdb_scalar_function_set_return_type;

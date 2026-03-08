@@ -18,6 +18,9 @@ public static partial class NativeMethods
         internal static void DuckDBScalarFunctionSetVarargs(IntPtr scalarFunction, DuckDBLogicalType type) =>
             Api.duckdb_scalar_function_set_varargs(scalarFunction, type.DangerousGetHandle());
 
+        internal static void DuckDBScalarFunctionSetSpecialHandling(IntPtr scalarFunction) =>
+            Api.duckdb_scalar_function_set_special_handling(scalarFunction);
+
         internal static void DuckDBScalarFunctionSetVolatile(IntPtr scalarFunction) =>
             Api.duckdb_scalar_function_set_volatile(scalarFunction);
 
