@@ -319,8 +319,8 @@ public struct DuckDBQueryProgress
 [StructLayout(LayoutKind.Sequential)]
 public struct DuckDBListEntry(ulong offset, ulong length)
 {
-    public ulong Offset { get; private set; } = offset;
-    public ulong Length { get; private set; } = length;
+    public ulong Offset { get; } = offset;
+    public ulong Length { get; } = length;
 }
 
 //[StructLayout(LayoutKind.Explicit, Size = 16)]

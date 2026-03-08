@@ -7,7 +7,7 @@ namespace DuckDB.ExtensionKit.ScalarFunctions;
 class ScalarFunctionInfo(DuckDBLogicalType returnType, Action<VectorDataReaderBase[], VectorDataWriterBase, ulong> action) : IDisposable
 {
     public DuckDBLogicalType ReturnType { get; } = returnType;
-    public Action<VectorDataReaderBase[], VectorDataWriterBase, ulong> Action { get; private set; } = action;
+    public Action<VectorDataReaderBase[], VectorDataWriterBase, ulong> Action { get; } = action;
 
     public void Dispose()
     {
