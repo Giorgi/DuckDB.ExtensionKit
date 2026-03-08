@@ -1,9 +1,9 @@
-﻿using DuckDB.ExtensionKit.Extensions;
-using DuckDB.ExtensionKit.Native;
+﻿using DuckDB.ExtensionKit.Native;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Numerics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace DuckDB.ExtensionKit.DataChunk.Reader;
 
@@ -155,6 +155,7 @@ internal class VectorDataReaderBase : IDisposable, IDuckDBDataReader
         //       reader.IsValid(offset)
         //           ? (int?)reader.GetValidValue<int>(offset, typeof(int))
         //           : default(int?)
+        [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "ScalarFunctionHighLevelExtensions cctor pre-generates all supported value type instantiations")]
         private static Func<VectorDataReaderBase, ulong, T> Compile()
         {
             if (underlyingType is null) return null!;

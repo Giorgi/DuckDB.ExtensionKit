@@ -4,7 +4,6 @@ using DuckDB.ExtensionKit.ScalarFunctions;
 using DuckDB.ExtensionKit.TableFunctions;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 
 namespace DuckDB.JWT;
 
@@ -36,6 +35,15 @@ public static partial class JwtExtension
         connection.RegisterScalarFunction<object, string, string>("net_format", NetFormat);
         connection.RegisterScalarFunction<object, string, string, string>("net_format_culture", NetFormatCulture);
         connection.RegisterScalarFunction<object, string>("net_concat", (object[] args) => string.Join(", ", args));
+
+        // Test-only functions to exercise HandlesNulls scalar function support
+        connection.RegisterScalarFunction<int?, string>("describe_val",
+            x => x.HasValue ? x.Value.ToString() : "nothing",
+            new ScalarFunctionOptions { HandlesNulls = true });
+
+        connection.RegisterScalarFunction<int?, int, string>("coalesce_add",
+            (a, b) => a.HasValue ? (a.Value + b).ToString() : b.ToString(),
+            new ScalarFunctionOptions { HandlesNulls = true });
     }
 
     private static bool IsJwt(string jwt)
