@@ -36,14 +36,12 @@ public static partial class JwtExtension
         connection.RegisterScalarFunction<object, string, string, string>("net_format_culture", NetFormatCulture);
         connection.RegisterScalarFunction<object, string>("net_concat", (object[] args) => string.Join(", ", args));
 
-        // Test-only functions to exercise HandlesNulls scalar function support
+        // Test-only functions to exercise null handling — nullability auto-inferred from int? parameters
         connection.RegisterScalarFunction<int?, string>("describe_val",
-            x => x.HasValue ? x.Value.ToString() : "nothing",
-            new ScalarFunctionOptions { HandlesNulls = true });
+            x => x.HasValue ? x.Value.ToString() : "nothing");
 
         connection.RegisterScalarFunction<int?, int, string>("coalesce_add",
-            (a, b) => a.HasValue ? (a.Value + b).ToString() : b.ToString(),
-            new ScalarFunctionOptions { HandlesNulls = true });
+            (a, b) => a.HasValue ? (a.Value + b).ToString() : b.ToString());
     }
 
     private static bool IsJwt(string jwt)

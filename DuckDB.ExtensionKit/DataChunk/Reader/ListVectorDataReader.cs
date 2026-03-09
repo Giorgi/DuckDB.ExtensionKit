@@ -74,7 +74,7 @@ internal sealed class ListVectorDataReader : VectorDataReaderBase
                 var childOffset = listOffset + i;
                 if (listDataReader.IsValid(childOffset))
                 {
-                    var item = listDataReader.GetValue<T>(childOffset);
+                    var item = listDataReader.GetValueStrict<T>(childOffset);
                     result.Add(item);
                 }
                 else
