@@ -81,7 +81,7 @@ public class ExtensionEntryPointGenerator : IIncrementalGenerator
 #nullable enable
 using DuckDB.ExtensionKit;
 using DuckDB.ExtensionKit.Native;
-using DuckDB.ExtensionKit.NativeMethods;
+using DuckDB.NET.Native;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;

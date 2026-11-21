@@ -17,7 +17,7 @@ internal class DuckDBValue : SafeHandleZeroOrMinusOneIsInvalid, IDuckDBValueRead
             value.Dispose();
         }
 
-        NativeMethods.NativeMethods.Value.DuckDBDestroyValue(handle);
+        NativeMethods.Value.DuckDBDestroyValue(handle);
         return true;
     }
 
@@ -26,44 +26,44 @@ internal class DuckDBValue : SafeHandleZeroOrMinusOneIsInvalid, IDuckDBValueRead
         childValues = values;
     }
 
-    public bool IsNull() => NativeMethods.NativeMethods.Value.DuckDBIsNullValue(this);
+    public bool IsNull() => NativeMethods.Value.DuckDBIsNullValue(this);
 
     public T GetValue<T>()
     {
-        var logicalType = NativeMethods.NativeMethods.Value.DuckDBGetValueType(this);
+        var logicalType = NativeMethods.Value.DuckDBGetValueType(this);
 
         //Logical type is part of the duckdb_value object and it shouldn't be released separately
         //It will get released when the duckdb_value object is destroyed below.
         var add = false;
         logicalType.DangerousAddRef(ref add);
 
-        var duckDBType = NativeMethods.NativeMethods.LogicalType.DuckDBGetTypeId(logicalType);
+        var duckDBType = NativeMethods.LogicalType.DuckDBGetTypeId(logicalType);
 
         return duckDBType switch
         {
-            DuckDBType.Boolean => Cast(NativeMethods.NativeMethods.Value.DuckDBGetBool(this)),
+            DuckDBType.Boolean => Cast(NativeMethods.Value.DuckDBGetBool(this)),
 
-            DuckDBType.TinyInt => Cast(NativeMethods.NativeMethods.Value.DuckDBGetInt8(this)),
-            DuckDBType.SmallInt => Cast(NativeMethods.NativeMethods.Value.DuckDBGetInt16(this)),
-            DuckDBType.Integer => Cast(NativeMethods.NativeMethods.Value.DuckDBGetInt32(this)),
-            DuckDBType.BigInt => Cast(NativeMethods.NativeMethods.Value.DuckDBGetInt64(this)),
+            DuckDBType.TinyInt => Cast(NativeMethods.Value.DuckDBGetInt8(this)),
+            DuckDBType.SmallInt => Cast(NativeMethods.Value.DuckDBGetInt16(this)),
+            DuckDBType.Integer => Cast(NativeMethods.Value.DuckDBGetInt32(this)),
+            DuckDBType.BigInt => Cast(NativeMethods.Value.DuckDBGetInt64(this)),
 
-            DuckDBType.UnsignedTinyInt => Cast(NativeMethods.NativeMethods.Value.DuckDBGetUInt8(this)),
-            DuckDBType.UnsignedSmallInt => Cast(NativeMethods.NativeMethods.Value.DuckDBGetUInt16(this)),
-            DuckDBType.UnsignedInteger => Cast(NativeMethods.NativeMethods.Value.DuckDBGetUInt32(this)),
-            DuckDBType.UnsignedBigInt => Cast(NativeMethods.NativeMethods.Value.DuckDBGetUInt64(this)),
+            DuckDBType.UnsignedTinyInt => Cast(NativeMethods.Value.DuckDBGetUInt8(this)),
+            DuckDBType.UnsignedSmallInt => Cast(NativeMethods.Value.DuckDBGetUInt16(this)),
+            DuckDBType.UnsignedInteger => Cast(NativeMethods.Value.DuckDBGetUInt32(this)),
+            DuckDBType.UnsignedBigInt => Cast(NativeMethods.Value.DuckDBGetUInt64(this)),
 
-            DuckDBType.Float => Cast(NativeMethods.NativeMethods.Value.DuckDBGetFloat(this)),
-            DuckDBType.Double => Cast(NativeMethods.NativeMethods.Value.DuckDBGetDouble(this)),
+            DuckDBType.Float => Cast(NativeMethods.Value.DuckDBGetFloat(this)),
+            DuckDBType.Double => Cast(NativeMethods.Value.DuckDBGetDouble(this)),
 
-            DuckDBType.Decimal => Cast(decimal.Parse(NativeMethods.NativeMethods.Value.DuckDBGetVarchar(this), NumberStyles.Any, CultureInfo.InvariantCulture)),
+            DuckDBType.Decimal => Cast(decimal.Parse(NativeMethods.Value.DuckDBGetVarchar(this), NumberStyles.Any, CultureInfo.InvariantCulture)),
 
-            DuckDBType.Uuid => Cast(new Guid(NativeMethods.NativeMethods.Value.DuckDBGetVarchar(this))),
+            DuckDBType.Uuid => Cast(new Guid(NativeMethods.Value.DuckDBGetVarchar(this))),
 
-            DuckDBType.HugeInt => Cast(NativeMethods.NativeMethods.Value.DuckDBGetHugeInt(this).ToBigInteger()),
-            DuckDBType.UnsignedHugeInt => Cast(NativeMethods.NativeMethods.Value.DuckDBGetUHugeInt(this).ToBigInteger()),
+            DuckDBType.HugeInt => Cast(NativeMethods.Value.DuckDBGetHugeInt(this).ToBigInteger()),
+            DuckDBType.UnsignedHugeInt => Cast(NativeMethods.Value.DuckDBGetUHugeInt(this).ToBigInteger()),
 
-            DuckDBType.Varchar => Cast(NativeMethods.NativeMethods.Value.DuckDBGetVarchar(this)),
+            DuckDBType.Varchar => Cast(NativeMethods.Value.DuckDBGetVarchar(this)),
 
             //DuckDBType.Date => Cast((DateOnly)DuckDBDateOnly.FromDuckDBDate(NativeMethods.Value.DuckDBGetDate(this))),
             //DuckDBType.Time => Cast((TimeOnly)NativeMethods.DateTimeHelpers.DuckDBFromTime(NativeMethods.Value.DuckDBGetTime(this))),

@@ -15,7 +15,7 @@ internal class DuckDBDataChunk : SafeHandleZeroOrMinusOneIsInvalid
 
     protected override bool ReleaseHandle()
     {
-        NativeMethods.NativeMethods.DataChunks.DuckDBDestroyDataChunk(handle);
+        NativeMethods.DataChunks.DuckDBDestroyDataChunk(handle);
         return true;
     }
 }

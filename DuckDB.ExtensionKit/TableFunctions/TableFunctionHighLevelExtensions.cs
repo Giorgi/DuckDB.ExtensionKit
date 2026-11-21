@@ -1,4 +1,4 @@
-using DuckDB.ExtensionKit.DataChunk.Writer;
+using DuckDB.NET.Data.DataChunk.Writer;
 using DuckDB.ExtensionKit.Extensions;
 using DuckDB.ExtensionKit.Native;
 using System.Diagnostics.CodeAnalysis;

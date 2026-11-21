@@ -1,5 +1,5 @@
-using DuckDB.ExtensionKit.DataChunk.Reader;
-using DuckDB.ExtensionKit.DataChunk.Writer;
+using DuckDB.NET.Data.DataChunk.Reader;
+using DuckDB.NET.Data.DataChunk.Writer;
 using DuckDB.ExtensionKit.Extensions;
 using DuckDB.ExtensionKit.Native;
 using System.Runtime.CompilerServices;
@@ -47,11 +47,11 @@ public static class ScalarFunctionExtensions
     private static unsafe void RegisterScalarMethod(this DuckDBConnection connection, string name, Action<IReadOnlyList<IDuckDBDataReader>, IDuckDBDataWriter, ulong> action, DuckDBLogicalType returnType,
                                                     bool varargs, ScalarFunctionOptions? options, params DuckDBLogicalType[] parameterTypes)
     {
-        var function = NativeMethods.NativeMethods.ScalarFunction.DuckDBCreateScalarFunction();
+        var function = NativeMethods.ScalarFunction.DuckDBCreateScalarFunction();
 
         fixed (byte* namePtr = Encoding.UTF8.GetBytes(name + "\0"))
         {
-            NativeMethods.NativeMethods.ScalarFunction.DuckDBScalarFunctionSetName(function, namePtr);
+            NativeMethods.ScalarFunction.DuckDBScalarFunctionSetName(function, namePtr);
         }
 
         if (varargs)
@@ -61,14 +61,14 @@ public static class ScalarFunctionExtensions
                 throw new InvalidOperationException("Cannot use params with multiple parameters");
             }
 
-            NativeMethods.NativeMethods.ScalarFunction.DuckDBScalarFunctionSetVarargs(function, parameterTypes[0]);
+            NativeMethods.ScalarFunction.DuckDBScalarFunctionSetVarargs(function, parameterTypes[0]);
             parameterTypes[0].Dispose();
         }
         else
         {
             foreach (var type in parameterTypes)
             {
-                NativeMethods.NativeMethods.ScalarFunction.DuckDBScalarFunctionAddParameter(function, type);
+                NativeMethods.ScalarFunction.DuckDBScalarFunctionAddParameter(function, type);
                 type.Dispose();
             }
         }
@@ -77,25 +77,25 @@ public static class ScalarFunctionExtensions
         var defaultPure = parameterTypes.Length > 0;
         if (!(options?.IsPureFunction ?? defaultPure))
         {
-            NativeMethods.NativeMethods.ScalarFunction.DuckDBScalarFunctionSetVolatile(function);
+            NativeMethods.ScalarFunction.DuckDBScalarFunctionSetVolatile(function);
         }
 
         if (options?.HandlesNulls == true)
         {
-            NativeMethods.NativeMethods.ScalarFunction.DuckDBScalarFunctionSetSpecialHandling(function);
+            NativeMethods.ScalarFunction.DuckDBScalarFunctionSetSpecialHandling(function);
         }
 
-        NativeMethods.NativeMethods.ScalarFunction.DuckDBScalarFunctionSetReturnType(function, returnType);
+        NativeMethods.ScalarFunction.DuckDBScalarFunctionSetReturnType(function, returnType);
 
-        NativeMethods.NativeMethods.ScalarFunction.DuckDBScalarFunctionSetFunction(function, &ScalarFunctionCallback);
+        NativeMethods.ScalarFunction.DuckDBScalarFunctionSetFunction(function, &ScalarFunctionCallback);
 
         var info = new ScalarFunctionInfo(returnType, action);
 
-        NativeMethods.NativeMethods.ScalarFunction.DuckDBScalarFunctionSetExtraInfo(function, info.ToHandle(), &DestroyExtraInfo);
+        NativeMethods.ScalarFunction.DuckDBScalarFunctionSetExtraInfo(function, info.ToHandle(), &DestroyExtraInfo);
 
-        var state = NativeMethods.NativeMethods.ScalarFunction.DuckDBRegisterScalarFunction(connection.Connection, function);
+        var state = NativeMethods.ScalarFunction.DuckDBRegisterScalarFunction(connection.Connection, function);
 
-        NativeMethods.NativeMethods.ScalarFunction.DuckDBDestroyScalarFunction(&function);
+        NativeMethods.ScalarFunction.DuckDBDestroyScalarFunction(&function);
 
         if (state != DuckDBState.Success)
         {
@@ -113,21 +113,21 @@ public static class ScalarFunctionExtensions
         {
             var dataChunk = new DuckDBDataChunk(chunk);
 
-            var chunkSize = NativeMethods.NativeMethods.DataChunks.DuckDBDataChunkGetSize(dataChunk);
+            var chunkSize = NativeMethods.DataChunks.DuckDBDataChunkGetSize(dataChunk);
             var handle =
-                GCHandle.FromIntPtr(new IntPtr(NativeMethods.NativeMethods.ScalarFunction.DuckDBScalarFunctionGetExtraInfo(info)));
+                GCHandle.FromIntPtr(new IntPtr(NativeMethods.ScalarFunction.DuckDBScalarFunctionGetExtraInfo(info)));
 
             if (handle.Target is not ScalarFunctionInfo functionInfo)
             {
                 throw new InvalidOperationException("User defined scalar function execution failed. Function extra info is null");
             }
 
-            readers = new VectorDataReaderBase[NativeMethods.NativeMethods.DataChunks.DuckDBDataChunkGetColumnCount(dataChunk)];
+            readers = new VectorDataReaderBase[NativeMethods.DataChunks.DuckDBDataChunkGetColumnCount(dataChunk)];
 
             for (var index = 0; index < readers.Length; index++)
             {
-                var vector = NativeMethods.NativeMethods.DataChunks.DuckDBDataChunkGetVector(dataChunk, index);
-                using var logicalType = NativeMethods.NativeMethods.Vectors.DuckDBVectorGetColumnType(vector);
+                var vector = NativeMethods.DataChunks.DuckDBDataChunkGetVector(dataChunk, index);
+                using var logicalType = NativeMethods.Vectors.DuckDBVectorGetColumnType(vector);
                 readers[index] = VectorDataReaderFactory.CreateReader(vector, logicalType);
             }
 
@@ -139,7 +139,7 @@ public static class ScalarFunctionExtensions
         {
             fixed (byte* errorPtr = Encoding.UTF8.GetBytes(ex.Message + "\0"))
             {
-                NativeMethods.NativeMethods.ScalarFunction.DuckDBScalarFunctionSetError(info, errorPtr);
+                NativeMethods.ScalarFunction.DuckDBScalarFunctionSetError(info, errorPtr);
             }
         }
         finally

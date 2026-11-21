@@ -146,6 +146,30 @@ This changes the ABI type to `C_STRUCT_UNSTABLE` and suppresses the experimental
    - Initializes the C API and receives function pointers to DuckDB's internal APIs
    - Obtains a database connection and calls your `RegisterFunctions` method to register scalar/table functions
 
+## Code Shared with DuckDB.NET
+
+The vector readers and writers, their helpers, and the native value types (`DuckDBType`, `DuckDBDateOnly`,
+`DuckDBHugeInt`, ...) are not copied into this repository. They are compiled from
+[DuckDB.NET](https://github.com/Giorgi/DuckDB.NET), which is the `external/DuckDB.NET` submodule. The linked files are
+listed in `DuckDB.ExtensionKit/DuckDB.ExtensionKit.csproj`.
+
+Those files reach native code only through `NativeMethods.*` and the handle types such as `DuckDBLogicalType`. DuckDB.NET
+implements them with P/Invoke; this project implements them over the function table that DuckDB passes to an extension
+(`NativeMethods/` and `Native/`). A wrapper that a linked file calls must have the signature DuckDB.NET.Bindings gives it,
+and a mismatch shows up as a build error here.
+
+To take newer DuckDB.NET code, move the submodule and build:
+
+```bash
+git -C external/DuckDB.NET fetch origin develop
+git -C external/DuckDB.NET checkout FETCH_HEAD
+dotnet build
+```
+
+Because of this, the shared types keep DuckDB.NET's namespaces: `DuckDBType` and the other native types are in
+`DuckDB.NET.Native`, and `IDuckDBDataReader` / `IDuckDBDataWriter` are in `DuckDB.NET.Data.DataChunk.Reader` /
+`DuckDB.NET.Data.DataChunk.Writer`.
+
 ## Features
 
 - **Type-safe APIs** - Register scalar and table functions with generic type parameters

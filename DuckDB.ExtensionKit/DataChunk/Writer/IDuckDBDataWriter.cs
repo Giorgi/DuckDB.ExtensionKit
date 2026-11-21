@@ -1,7 +1,0 @@
-﻿namespace DuckDB.ExtensionKit.DataChunk.Writer;
-
-public interface IDuckDBDataWriter
-{
-    void WriteNull(ulong rowIndex);
-    void WriteValue<T>(T value, ulong rowIndex);
-}
