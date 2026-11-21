@@ -44,6 +44,7 @@
   <ItemGroup Label="Linked from DuckDB.NET.Bindings">
     <Compile Include="$(DuckDBNetBindings)DuckDBNativeObjects.cs;
                       $(DuckDBNetBindings)DuckDBDateOnly.cs;
+                      $(DuckDBNetBindings)DuckDBTimeOnly.cs;
                       $(DuckDBNetBindings)DuckDBTimestamp.cs;
                       $(DuckDBNetBindings)DuckDBHugeInt.cs;
                       $(DuckDBNetBindings)DuckDBInterval.cs;
@@ -58,24 +59,6 @@
                       $(DuckDBNetBindings)Extensions\DuckDBStateExtensions.cs"
              Link="Shared\DuckDB.NET.Bindings\Extensions\%(Filename)%(Extension)" />
   </ItemGroup>
-
-  <!--
-    TEMPORARY. DuckDBTimeOnly.cs calls DateTimeExtensions.GetTicks, meaning the internal class of DuckDB.NET.Bindings.
-    Compiled together with DuckDB.NET.Data's DateTimeExtensions, the name is ambiguous (CS0104). Until DuckDB.NET
-    qualifies that call, a copy with it qualified is generated from the submodule's file at build time.
-  -->
-  <Target Name="GenerateDuckDBTimeOnly" BeforeTargets="CoreCompile" Inputs="$(DuckDBNetBindings)DuckDBTimeOnly.cs;$(MSBuildThisFileFullPath)" Outputs="$(IntermediateOutputPath)DuckDBTimeOnly.g.cs">
-    <PropertyGroup>
-      <_DuckDBTimeOnlySource>$([System.IO.File]::ReadAllText('$(DuckDBNetBindings)DuckDBTimeOnly.cs'))</_DuckDBTimeOnlySource>
-      <_DuckDBTimeOnlyFixed>$(_DuckDBTimeOnlySource.Replace('=&gt; DateTimeExtensions.GetTicks(', '=&gt; Extensions.DateTimeExtensions.GetTicks('))</_DuckDBTimeOnlyFixed>
-    </PropertyGroup>
-    <WriteLinesToFile File="$(IntermediateOutputPath)DuckDBTimeOnly.g.cs" Lines="#nullable enable;$(_DuckDBTimeOnlyFixed)" Overwrite="true" WriteOnlyWhenDifferent="true" />
-  </Target>
-  <Target Name="IncludeDuckDBTimeOnly" BeforeTargets="CoreCompile" AfterTargets="GenerateDuckDBTimeOnly">
-    <ItemGroup>
-      <Compile Include="$(IntermediateOutputPath)DuckDBTimeOnly.g.cs" />
-    </ItemGroup>
-  </Target>
 
   <!-- The global usings of DuckDB.NET.Data and DuckDB.NET.Bindings, which the linked files rely on. -->
   <ItemGroup>
