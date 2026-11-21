@@ -1,0 +1,13 @@
+# Moves the external/DuckDB.NET submodule to the newest commit of DuckDB.NET's develop branch (the branch set in
+# .gitmodules), so that ExtensionKit takes DuckDB.NET's reader and writer changes as they land. The update PR runs
+# the build, the Native AOT publish and the tests, which is where a change in DuckDB.NET that breaks the extension
+# shows up. extension-ci-tools is not updated: it follows DuckDB releases.
+version: 2
+updates:
+  - package-ecosystem: gitsubmodule
+    directory: "/"
+    schedule:
+      interval: daily
+    allow:
+      # A submodule's dependency name is its path.
+      - dependency-name: external/DuckDB.NET
