@@ -4,7 +4,9 @@ Build native DuckDB extensions using C# and [.NET AOT compilation](https://learn
 
 ## Getting Started
 
-Clone with submodules to include the required extension packaging script:
+Clone with submodules. The build needs both: `external/DuckDB.NET` holds the vector readers and writers that
+ExtensionKit compiles (see [Code Shared with DuckDB.NET](#code-shared-with-duckdbnet)), and
+`DuckDB.JWT/extension-ci-tools` holds the extension packaging script.
 
 ```bash
 git clone --recurse-submodules https://github.com/Giorgi/DuckDB.ExtensionKit.git
@@ -149,6 +151,52 @@ This changes the ABI type to `C_STRUCT_UNSTABLE` and suppresses the experimental
 3. **Extension Loading** - When DuckDB loads your extension, it calls the entry point which:
    - Initializes the C API and receives function pointers to DuckDB's internal APIs
    - Obtains a database connection and calls your `RegisterFunctions` method to register scalar/table functions
+
+## Supported Types
+
+The C# types of a function's parameters and result, and of the columns of a table function, map to DuckDB types:
+
+| C# type | DuckDB type | Parameter | Result / column |
+|---------|-------------|:---------:|:---------------:|
+| `bool` | BOOLEAN | ✓ | ✓ |
+| `sbyte`, `short`, `int`, `long` | TINYINT, SMALLINT, INTEGER, BIGINT | ✓ | ✓ |
+| `byte`, `ushort`, `uint`, `ulong` | UTINYINT, USMALLINT, UINTEGER, UBIGINT | ✓ | ✓ |
+| `float`, `double` | FLOAT, DOUBLE | ✓ | ✓ |
+| `decimal` | DECIMAL(38,18) | ✓ | ✓ |
+| `Int128`, `BigInteger` | HUGEINT | ✓ | ✓ |
+| `UInt128` | UHUGEINT | ✓ | ✓ |
+| `string` | VARCHAR | ✓ | ✓ |
+| `Guid` | UUID | ✓ | ✓ |
+| `DateOnly`, `DuckDBDateOnly` | DATE | ✓ | ✓ |
+| `TimeOnly`, `DuckDBTimeOnly` | TIME | ✓ | ✓ |
+| `DateTime` | TIMESTAMP | ✓ | ✓ |
+| `DateTimeOffset` | TIMESTAMPTZ | ✓ | ✓ |
+| `TimeSpan` | INTERVAL | ✓ | ✓ |
+| `List<T>` of a type above | LIST | ✓ | ✓ |
+| `byte[]` | BLOB | ✓ | not yet |
+| `object` | any type | ✓ | |
+
+A nullable value type (`int?`, `DateTime?`, ...) or a nullable reference type (`string?`) accepts and returns NULL.
+The same goes for list elements: a list with NULL elements needs a nullable element type, `List<int?>` and not
+`List<int>`.
+DuckDB casts an argument of another type when it can, for example a `DECIMAL(9,2)` to `DECIMAL(38,18)` or a
+`TIMESTAMP` to `TIMESTAMPTZ`.
+
+An `object` parameter accepts any type. Its value is the .NET type of the column:
+
+| DuckDB type | .NET value |
+|-------------|------------|
+| TIMESTAMP, TIMESTAMP_S, TIMESTAMP_MS, TIMESTAMP_NS, TIMESTAMPTZ | `DateTime` |
+| TIMETZ | `DateTimeOffset` |
+| HUGEINT, UHUGEINT | `Int128`, `UInt128` |
+| BLOB | `byte[]` |
+| ENUM | `string` |
+| LIST, ARRAY | `List<T>` |
+| MAP | `Dictionary<TKey, TValue>` |
+| the other types | as in the table above |
+
+Not supported yet: writing a `byte[]` result to a BLOB column, and, in a Native AOT extension, reading a STRUCT or a
+nested LIST. An INTERVAL with months cannot be read as `TimeSpan`, nor an infinite DATE or TIMESTAMP as a .NET date.
 
 ## Code Shared with DuckDB.NET
 
