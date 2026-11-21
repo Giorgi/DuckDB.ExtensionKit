@@ -14,7 +14,8 @@
 
   <!--
     Code shared with DuckDB.NET (external/DuckDB.NET, a git submodule): the vector readers and writers, their helpers,
-    and the native value types. The files are compiled here as they are. They reach native code only through
+    the native value types, and the registration of scalar and table functions (DuckDB.NET.Data/Functions; its
+    AGENTS.md has the rules that folder keeps for this project). The files are compiled here as they are. They reach native code only through
     NativeMethods.* and the handle types (DuckDBLogicalType, ...), which this project implements over the extension
     API in NativeMethods/ and Native/. A wrapper that a linked file calls must have the signature DuckDB.NET.Bindings
     gives it; a mismatch is a build error here.
@@ -32,6 +33,7 @@
 
   <ItemGroup Label="Linked from DuckDB.NET.Data">
     <Compile Include="$(DuckDBNetData)DataChunk\**\*.cs" Link="Shared\DuckDB.NET.Data\DataChunk\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(DuckDBNetData)Functions\*.cs" Link="Shared\DuckDB.NET.Data\Functions\%(Filename)%(Extension)" />
     <Compile Include="$(DuckDBNetData)Common\DuckDBGlobalData.cs" Link="Shared\DuckDB.NET.Data\Common\%(Filename)%(Extension)" />
     <Compile Include="$(DuckDBNetData)Extensions\DateTimeExtensions.cs;
                       $(DuckDBNetData)Extensions\DecimalExtensions.cs;
@@ -53,7 +55,8 @@
                       $(DuckDBNetBindings)DuckDBErrorType.cs;
                       $(DuckDBNetBindings)DuckDBStatementType.cs;
                       $(DuckDBNetBindings)DuckDBResultType.cs;
-                      $(DuckDBNetBindings)IDuckDBValueReader.cs"
+                      $(DuckDBNetBindings)IDuckDBValueReader.cs;
+                      $(DuckDBNetBindings)DuckDBValue.cs"
              Link="Shared\DuckDB.NET.Bindings\%(Filename)%(Extension)" />
     <Compile Include="$(DuckDBNetBindings)Extensions\DateTimeExtensions.cs;
                       $(DuckDBNetBindings)Extensions\DuckDBStateExtensions.cs"
@@ -74,9 +77,15 @@
     <Using Include="Microsoft.Win32.SafeHandles" />
     <Using Include="DuckDB.NET.Native" />
     <Using Include="DuckDB.NET.Data.Extensions" />
-    <!-- The seam: DuckDBException, and the handle types DuckDBLogicalType, DuckDBDataChunk and DuckDBValue. -->
+    <!--
+      The seam: DuckDBException, the handle types (DuckDBLogicalType, DuckDBDataChunk, DuckDBNativeConnection), and
+      the public types that the registration code uses by name (TableFunction, ColumnInfo, CardinalityHint,
+      ProjectedColumn, ScalarFunctionOptions, NamedAttribute). UdfErrors is in Connection/.
+    -->
     <Using Include="DuckDB.ExtensionKit" />
     <Using Include="DuckDB.ExtensionKit.Native" />
+    <Using Include="DuckDB.ExtensionKit.ScalarFunctions" />
+    <Using Include="DuckDB.ExtensionKit.TableFunctions" />
   </ItemGroup>
 
   <ItemGroup>

@@ -9,6 +9,10 @@ public static partial class NativeMethods
         internal static void DuckDBFree(IntPtr ptr) => Api.duckdb_free(ptr.ToPointer());
 
         internal static ulong DuckDBVectorSize() => Api.duckdb_vector_size();
+
+        // A string for a native call that takes a const char*: UTF-8 with a terminating NUL, where DuckDB.NET's
+        // LibraryImport declarations marshal a string the same way.
+        internal static byte[] ToUtf8(string value) => Encoding.UTF8.GetBytes(value + "\0");
     }
 
     internal static unsafe class DateTimeHelpers
