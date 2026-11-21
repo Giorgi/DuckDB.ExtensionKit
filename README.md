@@ -173,7 +173,7 @@ The C# types of a function's parameters and result, and of the columns of a tabl
 | `DateTimeOffset` | TIMESTAMPTZ | ✓ | ✓ |
 | `TimeSpan` | INTERVAL | ✓ | ✓ |
 | `List<T>` of a type above | LIST | ✓ | ✓ |
-| `byte[]` | BLOB | ✓ | not yet |
+| `byte[]` | BLOB | ✓ | ✓ |
 | `object` | any type | ✓ | |
 
 A nullable value type (`int?`, `DateTime?`, ...) or a nullable reference type (`string?`) accepts and returns NULL.
@@ -195,8 +195,8 @@ An `object` parameter accepts any type. Its value is the .NET type of the column
 | MAP | `Dictionary<TKey, TValue>` |
 | the other types | as in the table above |
 
-Not supported yet: writing a `byte[]` result to a BLOB column, and, in a Native AOT extension, reading a STRUCT or a
-nested LIST. An INTERVAL with months cannot be read as `TimeSpan`, nor an infinite DATE or TIMESTAMP as a .NET date.
+Not supported yet in a Native AOT extension: reading a STRUCT or a nested LIST. An INTERVAL with months cannot be
+read as `TimeSpan`, nor an infinite DATE or TIMESTAMP as a .NET date.
 
 ## Code Shared with DuckDB.NET
 
