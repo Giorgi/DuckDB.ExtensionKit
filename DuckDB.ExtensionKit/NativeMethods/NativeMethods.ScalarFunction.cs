@@ -1,6 +1,6 @@
 using DuckDB.ExtensionKit.Native;
 
-namespace DuckDB.ExtensionKit.NativeMethods;
+namespace DuckDB.NET.Native;
 
 public static partial class NativeMethods
 {

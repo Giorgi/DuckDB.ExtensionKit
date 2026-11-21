@@ -1,5 +1,5 @@
-﻿using DuckDB.ExtensionKit.Common;
-using DuckDB.ExtensionKit.DataChunk.Writer;
+﻿using DuckDB.NET.Data.Common;
+using DuckDB.NET.Data.DataChunk.Writer;
 using DuckDB.ExtensionKit.Extensions;
 using DuckDB.ExtensionKit.Native;
 using System.Runtime.CompilerServices;
@@ -36,15 +36,15 @@ public static class TableFunctionExtensions
 
     internal static unsafe void RegisterTableFunctionInternal(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, IReadOnlyDictionary<string, IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback, DuckDBLogicalType[] positionalLogicalTypes, NamedParameterDefinition[] namedParameters)
     {
-        var function = NativeMethods.NativeMethods.TableFunction.DuckDBCreateTableFunction();
+        var function = NativeMethods.TableFunction.DuckDBCreateTableFunction();
         fixed (byte* namePtr = Encoding.UTF8.GetBytes(name + "\0"))
         {
-            NativeMethods.NativeMethods.TableFunction.DuckDBTableFunctionSetName(function, namePtr);
+            NativeMethods.TableFunction.DuckDBTableFunctionSetName(function, namePtr);
         }
 
         foreach (var logicalType in positionalLogicalTypes)
         {
-            NativeMethods.NativeMethods.TableFunction.DuckDBTableFunctionAddParameter(function, logicalType);
+            NativeMethods.TableFunction.DuckDBTableFunctionAddParameter(function, logicalType);
             logicalType.Dispose();
         }
 
@@ -53,25 +53,25 @@ public static class TableFunctionExtensions
             using var logicalType = param.Type.GetLogicalType();
             fixed (byte* paramNamePtr = Encoding.UTF8.GetBytes(param.Name + "\0"))
             {
-                NativeMethods.NativeMethods.TableFunction.DuckDBTableFunctionAddNamedParameter(function, paramNamePtr, logicalType);
+                NativeMethods.TableFunction.DuckDBTableFunctionAddNamedParameter(function, paramNamePtr, logicalType);
             }
         }
 
         var tableFunctionInfo = new TableFunctionInfo(resultCallback, mapperCallback, Array.ConvertAll(namedParameters, p => p.Name));
 
-        NativeMethods.NativeMethods.TableFunction.DuckDBTableFunctionSetBind(function, &Bind);
-        NativeMethods.NativeMethods.TableFunction.DuckDBTableFunctionSetInit(function, &Init);
-        NativeMethods.NativeMethods.TableFunction.DuckDBTableFunctionSetFunction(function, &TableFunction);
-        NativeMethods.NativeMethods.TableFunction.DuckDBTableFunctionSetExtraInfo(function, tableFunctionInfo.ToHandle(), &DestroyExtraInfo);
+        NativeMethods.TableFunction.DuckDBTableFunctionSetBind(function, &Bind);
+        NativeMethods.TableFunction.DuckDBTableFunctionSetInit(function, &Init);
+        NativeMethods.TableFunction.DuckDBTableFunctionSetFunction(function, &TableFunction);
+        NativeMethods.TableFunction.DuckDBTableFunctionSetExtraInfo(function, tableFunctionInfo.ToHandle(), &DestroyExtraInfo);
 
-        var state = NativeMethods.NativeMethods.TableFunction.DuckDBRegisterTableFunction(connection.Connection, function);
+        var state = NativeMethods.TableFunction.DuckDBRegisterTableFunction(connection.Connection, function);
 
         if (state != DuckDBState.Success)
         {
             throw new InvalidOperationException($"Error registering user defined table function: {name}");
         }
 
-        NativeMethods.NativeMethods.TableFunction.DuckDBDestroyTableFunction(function);
+        NativeMethods.TableFunction.DuckDBDestroyTableFunction(function);
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
@@ -81,18 +81,18 @@ public static class TableFunctionExtensions
         Dictionary<string, IDuckDBValueReader> named = [];
         try
         {
-            var handle = GCHandle.FromIntPtr(new IntPtr(NativeMethods.NativeMethods.TableFunction.DuckDBBindGetExtraInfo(info)));
+            var handle = GCHandle.FromIntPtr(new IntPtr(NativeMethods.TableFunction.DuckDBBindGetExtraInfo(info)));
 
             if (handle.Target is not TableFunctionInfo functionInfo)
             {
                 throw new InvalidOperationException("User defined table function bind failed. Bind extra info is null");
             }
 
-            parameters = new IDuckDBValueReader[NativeMethods.NativeMethods.TableFunction.DuckDBBindGetParameterCount(info)];
+            parameters = new IDuckDBValueReader[NativeMethods.TableFunction.DuckDBBindGetParameterCount(info)];
 
             for (var i = 0; i < parameters.Length; i++)
             {
-                var value = NativeMethods.NativeMethods.TableFunction.DuckDBBindGetParameter(info, (ulong)i);
+                var value = NativeMethods.TableFunction.DuckDBBindGetParameter(info, (ulong)i);
                 parameters[i] = new DuckDBValue(value);
             }
 
@@ -103,7 +103,7 @@ public static class TableFunctionExtensions
             {
                 fixed (byte* paramNamePtr = Encoding.UTF8.GetBytes(paramName + "\0"))
                 {
-                    var value = NativeMethods.NativeMethods.TableFunction.DuckDBBindGetNamedParameter(info, paramNamePtr);
+                    var value = NativeMethods.TableFunction.DuckDBBindGetNamedParameter(info, paramNamePtr);
                     named[paramName] = value == IntPtr.Zero ? NullValueReader.Instance : new DuckDBValue(value);
                 }
             }
@@ -115,19 +115,19 @@ public static class TableFunctionExtensions
                 using var logicalType = columnInfo.Type.GetLogicalType();
                 fixed (byte* columnNamePtr = Encoding.UTF8.GetBytes(columnInfo.Name + "\0"))
                 {
-                    NativeMethods.NativeMethods.TableFunction.DuckDBBindAddResultColumn(info, columnNamePtr, logicalType);
+                    NativeMethods.TableFunction.DuckDBBindAddResultColumn(info, columnNamePtr, logicalType);
                 }
             }
 
             var bindData = new TableFunctionBindData(tableFunctionData.Columns, tableFunctionData.Data.GetEnumerator());
 
-            NativeMethods.NativeMethods.TableFunction.DuckDBBindSetBindData(info, bindData.ToHandle(), &DestroyExtraInfo);
+            NativeMethods.TableFunction.DuckDBBindSetBindData(info, bindData.ToHandle(), &DestroyExtraInfo);
         }
         catch (Exception ex)
         {
             fixed (byte* errorPtr = Encoding.UTF8.GetBytes(ex.Message + "\0"))
             {
-                NativeMethods.NativeMethods.TableFunction.DuckDBBindSetError(info, errorPtr);
+                NativeMethods.TableFunction.DuckDBBindSetError(info, errorPtr);
             }
         }
         finally
@@ -154,8 +154,8 @@ public static class TableFunctionExtensions
         DuckDBLogicalType[] logicalTypes = [];
         try
         {
-            var bindData = GCHandle.FromIntPtr(new IntPtr(NativeMethods.NativeMethods.TableFunction.DuckDBFunctionGetBindData(info)));
-            var extraInfo = GCHandle.FromIntPtr(new IntPtr(NativeMethods.NativeMethods.TableFunction.DuckDBFunctionGetExtraInfo(info)));
+            var bindData = GCHandle.FromIntPtr(new IntPtr(NativeMethods.TableFunction.DuckDBFunctionGetBindData(info)));
+            var extraInfo = GCHandle.FromIntPtr(new IntPtr(NativeMethods.TableFunction.DuckDBFunctionGetExtraInfo(info)));
 
             if (bindData.Target is not TableFunctionBindData tableFunctionBindData)
             {
@@ -175,7 +175,7 @@ public static class TableFunctionExtensions
             for (var columnIndex = 0; columnIndex < tableFunctionBindData.Columns.Count; columnIndex++)
             {
                 var column = tableFunctionBindData.Columns[columnIndex];
-                var vector = NativeMethods.NativeMethods.DataChunks.DuckDBDataChunkGetVector(dataChunk, columnIndex);
+                var vector = NativeMethods.DataChunks.DuckDBDataChunkGetVector(dataChunk, columnIndex);
 
                 logicalTypes[columnIndex] = column.Type.GetLogicalType();
                 writers[columnIndex] = VectorDataWriterFactory.CreateWriter(vector, logicalTypes[columnIndex]);
@@ -195,13 +195,13 @@ public static class TableFunctionExtensions
                 }
             }
 
-            NativeMethods.NativeMethods.DataChunks.DuckDBDataChunkSetSize(dataChunk, size);
+            NativeMethods.DataChunks.DuckDBDataChunkSetSize(dataChunk, size);
         }
         catch (Exception ex)
         {
             fixed (byte* errorPtr = Encoding.UTF8.GetBytes(ex.Message + "\0"))
             {
-                NativeMethods.NativeMethods.TableFunction.DuckDBFunctionSetError(info, errorPtr);
+                NativeMethods.TableFunction.DuckDBFunctionSetError(info, errorPtr);
             }
         }
         finally

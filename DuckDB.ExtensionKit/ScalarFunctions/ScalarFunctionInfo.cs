@@ -1,5 +1,5 @@
-﻿using DuckDB.ExtensionKit.DataChunk.Reader;
-using DuckDB.ExtensionKit.DataChunk.Writer;
+﻿using DuckDB.NET.Data.DataChunk.Reader;
+using DuckDB.NET.Data.DataChunk.Writer;
 using DuckDB.ExtensionKit.Native;
 
 namespace DuckDB.ExtensionKit.ScalarFunctions;

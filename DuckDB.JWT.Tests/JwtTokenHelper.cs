@@ -26,6 +26,28 @@ public static class JwtTokenHelper
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
+    // A token with the given nbf and exp, in seconds since the Unix epoch; null leaves the claim out. The claims are
+    // set on the payload directly: the JwtSecurityToken constructor drops nbf when it is given no expiry.
+    public static string CreateTokenWithLifetime(long? notBefore, long? expires)
+    {
+        var credentials = new SigningCredentials(new SymmetricSecurityKey(SecretKey), SecurityAlgorithms.HmacSha256);
+
+        var payload = new JwtPayload(issuer: "test-issuer", audience: "test-audience",
+                                     claims: [new Claim("sub", "1234567890")], notBefore: null, expires: null);
+
+        if (notBefore.HasValue)
+        {
+            payload[JwtRegisteredClaimNames.Nbf] = notBefore.Value;
+        }
+
+        if (expires.HasValue)
+        {
+            payload[JwtRegisteredClaimNames.Exp] = expires.Value;
+        }
+
+        return new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(new JwtHeader(credentials), payload));
+    }
+
     public static string CreateDefaultToken()
     {
         return CreateToken(

@@ -1,4 +1,4 @@
-using DuckDB.ExtensionKit.DataChunk.Writer;
+using DuckDB.NET.Data.DataChunk.Writer;
 using DuckDB.ExtensionKit.Extensions;
 using DuckDB.ExtensionKit.Native;
 using System.Diagnostics.CodeAnalysis;
@@ -184,6 +184,13 @@ public static class TableFunctionHighLevelExtensions
 
     private static readonly MethodInfo WriteValueMethod = typeof(IDuckDBDataWriter).GetMethod(nameof(IDuckDBDataWriter.WriteValue))!;
 
+    // Keeps the operator methods of decimal (op_Addition, op_LessThan, ...) through Native AOT trimming. For decimal
+    // arithmetic or a comparison in a projection, such as r => new { total = r.Price * r.Quantity }, the C# compiler
+    // emits Expression.Add (Multiply, LessThan, ...) without the operator method, and System.Linq.Expressions looks it
+    // up on decimal by reflection while the tree is built. Nothing else references those methods, so without this
+    // the trimmer removes them, and building the tree fails with "The binary operator Add is not defined for the
+    // types 'System.Decimal' and 'System.Decimal'". Every RegisterTableFunction overload calls this method.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, typeof(decimal))]
     private static (ColumnInfo[] columns, Action<object?, IDuckDBDataWriter[], ulong> mapper) ParseProjection<TData, TProjection>(Expression<Func<TData, TProjection>> projection)
     {
         var (names, types, accessors) = projection.Body switch

@@ -1,4 +1,5 @@
 using DuckDB.ExtensionKit.Native;
+using DuckDB.NET.Native;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
@@ -45,21 +46,21 @@ public unsafe struct DuckDBExtApiV1
     public delegate* unmanaged[Cdecl, SuppressGCTransition]<ulong> duckdb_vector_size;
 
     // --- String helpers ---
-    public delegate* unmanaged[Cdecl]<DuckDBStringT, byte> duckdb_string_is_inlined;
-    public delegate* unmanaged[Cdecl]<DuckDBStringT, uint> duckdb_string_t_length;
-    public delegate* unmanaged[Cdecl]<DuckDBStringT*, byte*> duckdb_string_t_data;
+    public delegate* unmanaged[Cdecl]<DuckDBString, byte> duckdb_string_is_inlined;
+    public delegate* unmanaged[Cdecl]<DuckDBString, uint> duckdb_string_t_length;
+    public delegate* unmanaged[Cdecl]<DuckDBString*, byte*> duckdb_string_t_data;
 
     // --- Date/Time conversions ---
     public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBDate, DuckDBDateOnly> duckdb_from_date;
     public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBDateOnly, DuckDBDate> duckdb_to_date;
     public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBDate, byte> duckdb_is_finite_date;
     public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTime, DuckDBTimeOnly> duckdb_from_time;
-    public delegate* unmanaged[Cdecl, SuppressGCTransition]<long, int, DuckDBTimeTz> duckdb_create_time_tz;
-    public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTimeTz, DuckDBTimeTzStruct> duckdb_from_time_tz;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<long, int, DuckDBTimeTzStruct> duckdb_create_time_tz;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTimeTzStruct, DuckDBTimeTz> duckdb_from_time_tz;
     public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTimeOnly, DuckDBTime> duckdb_to_time;
-    public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTimestamp, DuckDBTimestampStruct> duckdb_from_timestamp;
-    public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTimestampStruct, DuckDBTimestamp> duckdb_to_timestamp;
-    public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTimestamp, byte> duckdb_is_finite_timestamp;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTimestampStruct, DuckDBTimestamp> duckdb_from_timestamp;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTimestamp, DuckDBTimestampStruct> duckdb_to_timestamp;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTimestampStruct, byte> duckdb_is_finite_timestamp;
 
     // --- Numeric conversions ---
     public delegate* unmanaged[Cdecl]<DuckDBHugeInt, double> duckdb_hugeint_to_double;
@@ -99,8 +100,8 @@ public unsafe struct DuckDBExtApiV1
     public delegate* unmanaged[Cdecl]<nint, ulong, double, DuckDBState> duckdb_bind_double;
     public delegate* unmanaged[Cdecl]<nint, ulong, DuckDBDate, DuckDBState> duckdb_bind_date;
     public delegate* unmanaged[Cdecl]<nint, ulong, DuckDBTime, DuckDBState> duckdb_bind_time;
-    public delegate* unmanaged[Cdecl]<nint, ulong, DuckDBTimestamp, DuckDBState> duckdb_bind_timestamp;
-    public delegate* unmanaged[Cdecl]<nint, ulong, DuckDBTimestamp, DuckDBState> duckdb_bind_timestamp_tz;
+    public delegate* unmanaged[Cdecl]<nint, ulong, DuckDBTimestampStruct, DuckDBState> duckdb_bind_timestamp;
+    public delegate* unmanaged[Cdecl]<nint, ulong, DuckDBTimestampStruct, DuckDBState> duckdb_bind_timestamp_tz;
     public delegate* unmanaged[Cdecl]<nint, ulong, DuckDBInterval, DuckDBState> duckdb_bind_interval;
     public delegate* unmanaged[Cdecl]<nint, ulong, byte*, DuckDBState> duckdb_bind_varchar;
     public delegate* unmanaged[Cdecl]<nint, ulong, byte*, ulong, DuckDBState> duckdb_bind_varchar_length;
@@ -142,8 +143,8 @@ public unsafe struct DuckDBExtApiV1
     public delegate* unmanaged[Cdecl]<double, nint> duckdb_create_double;
     public delegate* unmanaged[Cdecl]<DuckDBDate, nint> duckdb_create_date;
     public delegate* unmanaged[Cdecl]<DuckDBTime, nint> duckdb_create_time;
-    public delegate* unmanaged[Cdecl]<DuckDBTimeTz, nint> duckdb_create_time_tz_value;
-    public delegate* unmanaged[Cdecl]<DuckDBTimestamp, nint> duckdb_create_timestamp;
+    public delegate* unmanaged[Cdecl]<DuckDBTimeTzStruct, nint> duckdb_create_time_tz_value;
+    public delegate* unmanaged[Cdecl]<DuckDBTimestampStruct, nint> duckdb_create_timestamp;
     public delegate* unmanaged[Cdecl]<DuckDBInterval, nint> duckdb_create_interval;
     public delegate* unmanaged[Cdecl]<byte*, ulong, nint> duckdb_create_blob;
     public delegate* unmanaged[Cdecl]<DuckDBVarInt, nint> duckdb_create_varint;
@@ -167,8 +168,8 @@ public unsafe struct DuckDBExtApiV1
     public delegate* unmanaged[Cdecl]<nint, double> duckdb_get_double;
     public delegate* unmanaged[Cdecl]<nint, DuckDBDate> duckdb_get_date;
     public delegate* unmanaged[Cdecl]<nint, DuckDBTime> duckdb_get_time;
-    public delegate* unmanaged[Cdecl]<nint, DuckDBTimeTz> duckdb_get_time_tz;
-    public delegate* unmanaged[Cdecl]<nint, DuckDBTimestamp> duckdb_get_timestamp;
+    public delegate* unmanaged[Cdecl]<nint, DuckDBTimeTzStruct> duckdb_get_time_tz;
+    public delegate* unmanaged[Cdecl]<nint, DuckDBTimestampStruct> duckdb_get_timestamp;
     public delegate* unmanaged[Cdecl]<nint, DuckDBInterval> duckdb_get_interval;
     public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, nint> duckdb_get_value_type;
     public delegate* unmanaged[Cdecl]<nint, DuckDBBlob> duckdb_get_blob;
@@ -398,11 +399,11 @@ public unsafe struct DuckDBExtApiV1
     public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTimestampS, byte> duckdb_is_finite_timestamp_s;
     public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTimestampMs, byte> duckdb_is_finite_timestamp_ms;
     public delegate* unmanaged[Cdecl, SuppressGCTransition]<DuckDBTimestampNs, byte> duckdb_is_finite_timestamp_ns;
-    public delegate* unmanaged[Cdecl]<DuckDBTimestamp, nint> duckdb_create_timestamp_tz;
+    public delegate* unmanaged[Cdecl]<DuckDBTimestampStruct, nint> duckdb_create_timestamp_tz;
     public delegate* unmanaged[Cdecl]<DuckDBTimestampS, nint> duckdb_create_timestamp_s;
     public delegate* unmanaged[Cdecl]<DuckDBTimestampMs, nint> duckdb_create_timestamp_ms;
     public delegate* unmanaged[Cdecl]<DuckDBTimestampNs, nint> duckdb_create_timestamp_ns;
-    public delegate* unmanaged[Cdecl]<nint, DuckDBTimestamp> duckdb_get_timestamp_tz;
+    public delegate* unmanaged[Cdecl]<nint, DuckDBTimestampStruct> duckdb_get_timestamp_tz;
     public delegate* unmanaged[Cdecl]<nint, DuckDBTimestampS> duckdb_get_timestamp_s;
     public delegate* unmanaged[Cdecl]<nint, DuckDBTimestampMs> duckdb_get_timestamp_ms;
     public delegate* unmanaged[Cdecl]<nint, DuckDBTimestampNs> duckdb_get_timestamp_ns;
@@ -429,7 +430,7 @@ public unsafe struct DuckDBExtApiV1
     public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, double, DuckDBState> duckdb_append_double;
     public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, DuckDBDate, DuckDBState> duckdb_append_date;
     public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, DuckDBTime, DuckDBState> duckdb_append_time;
-    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, DuckDBTimestamp, DuckDBState> duckdb_append_timestamp;
+    public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, DuckDBTimestampStruct, DuckDBState> duckdb_append_timestamp;
     public delegate* unmanaged[Cdecl, SuppressGCTransition]<nint, DuckDBInterval, DuckDBState> duckdb_append_interval;
     public delegate* unmanaged[Cdecl]<nint, byte*, DuckDBState> duckdb_append_varchar;
     public delegate* unmanaged[Cdecl]<nint, byte*, ulong, DuckDBState> duckdb_append_varchar_length;
@@ -485,17 +486,17 @@ public unsafe struct DuckDBExtApiV1
     [Experimental("DUCKDBExtensionKit001", Message = "This is an unstable DuckDB API that may change in a future version. Set <UseUnstableApi>true</UseUnstableApi> in your .csproj to suppress this warning.")]
     public delegate* unmanaged[Cdecl]<nint*, ulong, ulong, DuckDBTime> duckdb_value_time;
     [Experimental("DUCKDBExtensionKit001", Message = "This is an unstable DuckDB API that may change in a future version. Set <UseUnstableApi>true</UseUnstableApi> in your .csproj to suppress this warning.")]
-    public delegate* unmanaged[Cdecl]<nint*, ulong, ulong, DuckDBTimestamp> duckdb_value_timestamp;
+    public delegate* unmanaged[Cdecl]<nint*, ulong, ulong, DuckDBTimestampStruct> duckdb_value_timestamp;
     [Experimental("DUCKDBExtensionKit001", Message = "This is an unstable DuckDB API that may change in a future version. Set <UseUnstableApi>true</UseUnstableApi> in your .csproj to suppress this warning.")]
     public delegate* unmanaged[Cdecl]<nint*, ulong, ulong, DuckDBInterval> duckdb_value_interval;
     [Experimental("DUCKDBExtensionKit001", Message = "This is an unstable DuckDB API that may change in a future version. Set <UseUnstableApi>true</UseUnstableApi> in your .csproj to suppress this warning.")]
     public delegate* unmanaged[Cdecl]<nint*, ulong, ulong, byte*> duckdb_value_varchar;
     [Experimental("DUCKDBExtensionKit001", Message = "This is an unstable DuckDB API that may change in a future version. Set <UseUnstableApi>true</UseUnstableApi> in your .csproj to suppress this warning.")]
-    public delegate* unmanaged[Cdecl]<nint*, ulong, ulong, DuckDBStringT> duckdb_value_string;
+    public delegate* unmanaged[Cdecl]<nint*, ulong, ulong, DuckDBString> duckdb_value_string;
     [Experimental("DUCKDBExtensionKit001", Message = "This is an unstable DuckDB API that may change in a future version. Set <UseUnstableApi>true</UseUnstableApi> in your .csproj to suppress this warning.")]
     public delegate* unmanaged[Cdecl]<nint*, ulong, ulong, byte*> duckdb_value_varchar_internal;
     [Experimental("DUCKDBExtensionKit001", Message = "This is an unstable DuckDB API that may change in a future version. Set <UseUnstableApi>true</UseUnstableApi> in your .csproj to suppress this warning.")]
-    public delegate* unmanaged[Cdecl]<nint*, ulong, ulong, DuckDBStringT> duckdb_value_string_internal;
+    public delegate* unmanaged[Cdecl]<nint*, ulong, ulong, DuckDBString> duckdb_value_string_internal;
     [Experimental("DUCKDBExtensionKit001", Message = "This is an unstable DuckDB API that may change in a future version. Set <UseUnstableApi>true</UseUnstableApi> in your .csproj to suppress this warning.")]
     public delegate* unmanaged[Cdecl]<nint*, ulong, ulong, DuckDBBlob> duckdb_value_blob;
     [Experimental("DUCKDBExtensionKit001", Message = "This is an unstable DuckDB API that may change in a future version. Set <UseUnstableApi>true</UseUnstableApi> in your .csproj to suppress this warning.")]

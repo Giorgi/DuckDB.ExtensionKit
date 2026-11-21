@@ -1,4 +1,4 @@
-﻿using DuckDB.ExtensionKit.DataChunk.Writer;
+﻿using DuckDB.NET.Data.DataChunk.Writer;
 using DuckDB.ExtensionKit.Native;
 
 namespace DuckDB.ExtensionKit.TableFunctions;

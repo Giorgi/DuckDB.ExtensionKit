@@ -11,7 +11,7 @@ internal class DuckDBLogicalType() : SafeHandleZeroOrMinusOneIsInvalid(true)
 
     protected override bool ReleaseHandle()
     {
-        NativeMethods.NativeMethods.LogicalType.DuckDBDestroyLogicalType(handle);
+        NativeMethods.LogicalType.DuckDBDestroyLogicalType(handle);
         return true;
     }
 }

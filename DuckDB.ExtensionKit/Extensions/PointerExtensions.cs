@@ -10,7 +10,7 @@ internal static class PointerExtensions
 
         if (freeWhenCopied)
         {
-            NativeMethods.NativeMethods.Helpers.DuckDBFree(unmanagedString);
+            NativeMethods.Helpers.DuckDBFree(unmanagedString);
         }
 
         return result ?? "";

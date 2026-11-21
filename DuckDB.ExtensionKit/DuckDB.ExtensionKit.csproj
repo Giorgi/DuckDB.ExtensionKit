@@ -12,6 +12,73 @@
     <GetTargetPathDependsOn>$(GetTargetPathDependsOn);IncludeGeneratorFiles</GetTargetPathDependsOn>
   </PropertyGroup>
 
+  <!--
+    Code shared with DuckDB.NET (external/DuckDB.NET, a git submodule): the vector readers and writers, their helpers,
+    and the native value types. The files are compiled here as they are. They reach native code only through
+    NativeMethods.* and the handle types (DuckDBLogicalType, ...), which this project implements over the extension
+    API in NativeMethods/ and Native/. A wrapper that a linked file calls must have the signature DuckDB.NET.Bindings
+    gives it; a mismatch is a build error here.
+  -->
+  <PropertyGroup>
+    <DuckDBNetRoot>$(MSBuildThisFileDirectory)..\external\DuckDB.NET\</DuckDBNetRoot>
+    <DuckDBNetData>$(DuckDBNetRoot)DuckDB.NET.Data\</DuckDBNetData>
+    <DuckDBNetBindings>$(DuckDBNetRoot)DuckDB.NET.Bindings\</DuckDBNetBindings>
+  </PropertyGroup>
+
+  <Target Name="CheckDuckDBNetSubmodule" BeforeTargets="BeforeBuild">
+    <Error Condition="!Exists('$(DuckDBNetData)DataChunk\Reader\VectorDataReaderFactory.cs')"
+           Text="external/DuckDB.NET is missing. Run: git submodule update --init --recursive" />
+  </Target>
+
+  <ItemGroup Label="Linked from DuckDB.NET.Data">
+    <Compile Include="$(DuckDBNetData)DataChunk\**\*.cs" Link="Shared\DuckDB.NET.Data\DataChunk\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(DuckDBNetData)Common\DuckDBGlobalData.cs" Link="Shared\DuckDB.NET.Data\Common\%(Filename)%(Extension)" />
+    <Compile Include="$(DuckDBNetData)Extensions\DateTimeExtensions.cs;
+                      $(DuckDBNetData)Extensions\DecimalExtensions.cs;
+                      $(DuckDBNetData)Extensions\GCHandleHelpers.cs;
+                      $(DuckDBNetData)Extensions\GuidConverter.cs;
+                      $(DuckDBNetData)Extensions\TypeExtensions.cs"
+             Link="Shared\DuckDB.NET.Data\Extensions\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup Label="Linked from DuckDB.NET.Bindings">
+    <Compile Include="$(DuckDBNetBindings)DuckDBNativeObjects.cs;
+                      $(DuckDBNetBindings)DuckDBDateOnly.cs;
+                      $(DuckDBNetBindings)DuckDBTimeOnly.cs;
+                      $(DuckDBNetBindings)DuckDBTimestamp.cs;
+                      $(DuckDBNetBindings)DuckDBHugeInt.cs;
+                      $(DuckDBNetBindings)DuckDBInterval.cs;
+                      $(DuckDBNetBindings)DuckDBDecimal.cs;
+                      $(DuckDBNetBindings)DuckDBBignum.cs;
+                      $(DuckDBNetBindings)DuckDBErrorType.cs;
+                      $(DuckDBNetBindings)DuckDBStatementType.cs;
+                      $(DuckDBNetBindings)DuckDBResultType.cs;
+                      $(DuckDBNetBindings)IDuckDBValueReader.cs"
+             Link="Shared\DuckDB.NET.Bindings\%(Filename)%(Extension)" />
+    <Compile Include="$(DuckDBNetBindings)Extensions\DateTimeExtensions.cs;
+                      $(DuckDBNetBindings)Extensions\DuckDBStateExtensions.cs"
+             Link="Shared\DuckDB.NET.Bindings\Extensions\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <!-- The global usings of DuckDB.NET.Data and DuckDB.NET.Bindings, which the linked files rely on. -->
+  <ItemGroup>
+    <Using Include="System.Collections" />
+    <Using Include="System.Data" />
+    <Using Include="System.Data.Common" />
+    <Using Include="System.Globalization" />
+    <Using Include="System.Numerics" />
+    <Using Include="System.Runtime.CompilerServices" />
+    <Using Include="System.Runtime.InteropServices" />
+    <Using Include="System.Runtime.InteropServices.Marshalling" />
+    <Using Include="System.Text" />
+    <Using Include="Microsoft.Win32.SafeHandles" />
+    <Using Include="DuckDB.NET.Native" />
+    <Using Include="DuckDB.NET.Data.Extensions" />
+    <!-- The seam: DuckDBException, and the handle types DuckDBLogicalType, DuckDBDataChunk and DuckDBValue. -->
+    <Using Include="DuckDB.ExtensionKit" />
+    <Using Include="DuckDB.ExtensionKit.Native" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\DuckDB.ExtensionKit.Generators\DuckDB.ExtensionKit.Generators.csproj"
                       OutputItemType="Analyzer"
