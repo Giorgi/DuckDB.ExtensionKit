@@ -18,6 +18,13 @@ public static partial class JwtExtension
 
         connection.RegisterScalarFunction<string, bool>("has_jwt_claims", HasJwtClaims);
 
+        // The lifetime of a token (RFC 7519, nbf and exp). These read the token without checking its signature.
+        connection.RegisterScalarFunction<string, DateTimeOffset?>("jwt_valid_from", JwtValidFrom);
+
+        connection.RegisterScalarFunction<string, DateTimeOffset?>("jwt_valid_to", JwtValidTo);
+
+        connection.RegisterScalarFunction<string, DateTimeOffset, bool>("jwt_is_valid_at", JwtIsValidAt);
+
         connection.RegisterTableFunction("extract_claims_from_jwt", (string jwt) => ExtractClaimsFromJwt(jwt),
                                          c => new { claim_name = c.Key, claim_value = c.Value });
 
@@ -85,6 +92,34 @@ public static partial class JwtExtension
         var token = jwtHandler.ReadJwtToken(jwt);
         return token.Claims.FirstOrDefault(c => c.Type == claim)?.Value;
     }
+
+    // ValidFrom and ValidTo are DateTime.MinValue when the token has no nbf or exp claim; that is returned as NULL.
+    private static DateTimeOffset? JwtValidFrom(string jwt) => ToTimestampTz(new JwtSecurityTokenHandler().ReadJwtToken(jwt).ValidFrom);
+
+    private static DateTimeOffset? JwtValidTo(string jwt) => ToTimestampTz(new JwtSecurityTokenHandler().ReadJwtToken(jwt).ValidTo);
+
+    // A token is valid from nbf, inclusive, until exp, exclusive: RFC 7519 rejects it "on or after" exp. A missing
+    // claim leaves that side open.
+    private static bool JwtIsValidAt(string jwt, DateTimeOffset at)
+    {
+        var token = new JwtSecurityTokenHandler().ReadJwtToken(jwt);
+        var instant = at.UtcDateTime;
+
+        if (token.ValidFrom != DateTime.MinValue && instant < token.ValidFrom)
+        {
+            return false;
+        }
+
+        if (token.ValidTo != DateTime.MinValue && instant >= token.ValidTo)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static DateTimeOffset? ToTimestampTz(DateTime utc) =>
+        utc == DateTime.MinValue ? null : new DateTimeOffset(DateTime.SpecifyKind(utc, DateTimeKind.Utc));
 
     private static Dictionary<string, string> ExtractClaimsFromJwt(string jwt)
     {
