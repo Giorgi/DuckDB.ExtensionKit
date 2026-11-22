@@ -26,6 +26,14 @@ public static class TableFunctionExtensions
 
     public static void RegisterTableFunction<T1, T2, T3, T4, T5, T6, T7, T8>(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback) => connection.RegisterTableFunctionInternal(name, resultCallback, mapperCallback, typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7), typeof(T8));
 
+    // The parameters given as DuckDB types, for a function with more parameters than the generic overloads take, or
+    // with parameter types that have no .NET type to name them by.
+    public static void RegisterTableFunction(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback, params DuckDBType[] parameterTypes)
+    {
+        var logicalTypes = Array.ConvertAll(parameterTypes, NativeMethods.LogicalType.DuckDBCreateLogicalType);
+        TableFunctionRegistration.Register(connection.NativeConnection, name, (positional, _) => resultCallback(positional), mapperCallback, logicalTypes, []);
+    }
+
     private static void RegisterTableFunctionInternal(this DuckDBConnection connection, string name, Func<IReadOnlyList<IDuckDBValueReader>, TableFunction> resultCallback, Action<object?, IDuckDBDataWriter[], ulong> mapperCallback, params Type[] parameterTypes)
     {
         var logicalTypes = Array.ConvertAll(parameterTypes, TypeExtensions.GetLogicalType);
