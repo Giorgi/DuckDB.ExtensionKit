@@ -72,12 +72,25 @@ jobs:
     - name: Run tests
       run: dotnet test --project DuckDB.JWT.Tests/DuckDB.JWT.Tests.csproj --no-build --verbosity normal
 
+    # An extension with a function for every kind of value and registration, published with Native AOT like a real
+    # one: it runs the code compiled from DuckDB.NET where reflection and code built at run time can fail.
+    - name: Build test extension with Native AOT
+      run: dotnet publish DuckDB.ExtensionKit.TestExtension/DuckDB.ExtensionKit.TestExtension.csproj -c Release -r ${{ matrix.rid }}
+
+    - name: Build ExtensionKit test project
+      run: dotnet build DuckDB.ExtensionKit.Tests/DuckDB.ExtensionKit.Tests.csproj -c Debug
+
+    - name: Run ExtensionKit tests
+      run: dotnet test --project DuckDB.ExtensionKit.Tests/DuckDB.ExtensionKit.Tests.csproj --no-build --verbosity normal
+
     - name: Upload test results
       if: always()
       uses: actions/upload-artifact@v4
       with:
         name: test-results-${{ matrix.os }}
-        path: DuckDB.JWT.Tests/TestResults/**/*
+        path: |
+          DuckDB.JWT.Tests/TestResults/**/*
+          DuckDB.ExtensionKit.Tests/TestResults/**/*
         if-no-files-found: ignore
 
     - name: Upload extension artifact

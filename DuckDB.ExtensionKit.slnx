@@ -3,4 +3,6 @@
   <Project Path="DuckDB.JWT/DuckDB.JWT.csproj" Id="d18eaa6c-7118-4ca5-aa43-66294e95baa6" />
   <Project Path="DuckDB.ExtensionKit.Generators/DuckDB.ExtensionKit.Generators.csproj" />
   <Project Path="DuckDB.ExtensionKit/DuckDB.ExtensionKit.csproj" />
+  <Project Path="DuckDB.ExtensionKit.TestExtension/DuckDB.ExtensionKit.TestExtension.csproj" />
+  <Project Path="DuckDB.ExtensionKit.Tests/DuckDB.ExtensionKit.Tests.csproj" />
 </Solution>

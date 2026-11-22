@@ -183,6 +183,9 @@ not called for it. The same goes for list elements: a list with NULL elements ne
 DuckDB casts an argument of another type when it can, for example a `DECIMAL(9,2)` to `DECIMAL(38,18)` or a
 `TIMESTAMP` to `TIMESTAMPTZ`.
 
+A table function cannot take a `DateTimeOffset` parameter yet: the reader of its arguments gives a TIMESTAMPTZ as a
+`DateTime` only. Scalar functions are not affected.
+
 An `object` parameter accepts any type. Its value is the .NET type of the column:
 
 | DuckDB type | .NET value |
@@ -198,6 +201,19 @@ An `object` parameter accepts any type. Its value is the .NET type of the column
 
 Not supported yet in a Native AOT extension: reading a STRUCT or a nested LIST. An INTERVAL with months cannot be
 read as `TimeSpan`, nor an infinite DATE or TIMESTAMP as a .NET date.
+
+## Tests
+
+`DuckDB.JWT.Tests` tests the JWT example. `DuckDB.ExtensionKit.Tests` tests ExtensionKit itself, through
+`DuckDB.ExtensionKit.TestExtension`: an extension with a function for every supported type and every kind of
+registration (scalar, `params`, typed and low-level table functions, named parameters, projections). Both
+extensions are published with Native AOT, like a real one, because code that works with the JIT can fail there.
+Publish the extension for your platform, then run the tests:
+
+```bash
+dotnet publish DuckDB.ExtensionKit.TestExtension -c Release -r linux-x64   # or win-x64, osx-arm64, ...
+dotnet test --project DuckDB.ExtensionKit.Tests
+```
 
 ## Code Shared with DuckDB.NET
 
