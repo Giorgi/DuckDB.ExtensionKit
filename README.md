@@ -183,9 +183,6 @@ not called for it. The same goes for list elements: a list with NULL elements ne
 DuckDB casts an argument of another type when it can, for example a `DECIMAL(9,2)` to `DECIMAL(38,18)` or a
 `TIMESTAMP` to `TIMESTAMPTZ`.
 
-A table function cannot take a `DateTimeOffset` parameter yet: the reader of its arguments gives a TIMESTAMPTZ as a
-`DateTime` only. Scalar functions are not affected.
-
 An `object` parameter accepts any type. Its value is the .NET type of the column:
 
 | DuckDB type | .NET value |

@@ -74,11 +74,21 @@ public class TableFunctionTests(ExtensionFixture fixture) : ExtensionTestBase(fi
     {
         var row = Rows("""
             SELECT day = DATE '2024-02-29', time = TIME '13:45:30.5', span = INTERVAL '90 minutes',
-                   ts = TIMESTAMP '2024-02-29 13:45:30'
-            FROM temporal_args(DATE '2024-02-29', TIME '13:45:30.5', INTERVAL '90 minutes', TIMESTAMP '2024-02-29 13:45:30')
+                   ts = TIMESTAMPTZ '2024-02-29 13:45:30+00'
+            FROM temporal_args(DATE '2024-02-29', TIME '13:45:30.5', INTERVAL '90 minutes', TIMESTAMPTZ '2024-02-29 15:45:30+02')
             """)[0];
 
         await Assert.That(row).IsEquivalentTo(new object?[] { true, true, true, true });
+    }
+
+    // A TIMESTAMPTZ argument read as DateTimeOffset is the instant at UTC; NULL is null for DateTimeOffset?.
+    [Test]
+    [Arguments("TIMESTAMPTZ '2024-02-29 15:45:30+02'", "2024-02-29 13:45:30 +00:00")]
+    [Arguments("TIMESTAMPTZ '2024-02-29 13:45:30+00'", "2024-02-29 13:45:30 +00:00")]
+    [Arguments("NULL::TIMESTAMPTZ", "none")]
+    public async Task DateTimeOffsetArgument(string literal, string expected)
+    {
+        await Assert.That(Scalar($"SELECT value FROM instant_of({literal})")).IsEqualTo(expected);
     }
 
     [Test]

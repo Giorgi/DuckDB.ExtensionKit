@@ -107,10 +107,12 @@ public static partial class TestExtension
         connection.RegisterTableFunction("days_from", (DateTime start, int count) => Enumerable.Range(0, count).Select(i => start.AddDays(i)),
             (DateTime d) => new { day = d });
 
-        // No DateTimeOffset (TIMESTAMPTZ) parameter: DuckDBValue, from DuckDB.NET, reads a TIMESTAMPTZ argument as
-        // DateTime and refuses to give it as DateTimeOffset.
-        connection.RegisterTableFunction("temporal_args", (DateOnly day, TimeOnly time, TimeSpan span, DateTime at) => new[] { (day, time, span, at) },
-            ((DateOnly Day, TimeOnly Time, TimeSpan Span, DateTime At) t) => new { day = t.Day, time = t.Time, span = t.Span, ts = t.At });
+        connection.RegisterTableFunction("temporal_args", (DateOnly day, TimeOnly time, TimeSpan span, DateTimeOffset at) => new[] { (day, time, span, at) },
+            ((DateOnly Day, TimeOnly Time, TimeSpan Span, DateTimeOffset At) t) => new { day = t.Day, time = t.Time, span = t.Span, ts = t.At });
+
+        // A nullable DateTimeOffset argument: the instant at UTC, or "none" for NULL.
+        connection.RegisterTableFunction("instant_of", (DateTimeOffset? at) => new[] { at?.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss zzz") ?? "none" },
+            (string s) => new { value = s });
 
         // Named parameters; an omitted one is null.
         connection.RegisterTableFunction("named_args", (int count, [Named("prefix")] string? prefix, [Named] int? step) =>
