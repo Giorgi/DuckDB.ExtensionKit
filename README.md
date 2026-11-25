@@ -70,11 +70,22 @@ public static partial class MyExtension
             (string category, [Named("max_rows")] int? limit) =>
                 GetItems(category).Take(limit ?? int.MaxValue),
             (Item item) => new { name = item.Name, price = item.Price });
+
+        // Table function that is told which columns the query reads (projection pushdown)
+        // SQL: SELECT name FROM get_item_columns('toys') -> columns holds name only
+        connection.RegisterTableFunction("get_item_columns",
+            (IReadOnlyList<ProjectedColumn> columns, string category) => GetItems(category, columns),
+            (Item item) => new { id = item.Id, name = item.Name, price = item.Price });
     }
 }
 ```
 
 Named parameters use the `[Named]` attribute on lambda parameters. By default the SQL parameter name matches the C# name; use `[Named("custom_name")]` to override it. Named parameters are optional - omitted ones receive `null`.
+
+Table functions support projection pushdown: only the columns a query reads are written, and the projection
+code of the others does not run. To also fetch or compute less, make the first parameter of the data callback an
+`IReadOnlyList<ProjectedColumn>`. It is not a SQL parameter; it holds the columns the query reads, in the order
+DuckDB asks for them, each with its `Index` among the function's columns, its `Name` and its `Type`.
 
 The source generator automatically creates the native entry point (`myextension_init_c_api`).
 
