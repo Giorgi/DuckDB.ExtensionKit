@@ -11,3 +11,9 @@ updates:
     allow:
       # A submodule's dependency name is its path.
       - dependency-name: external/DuckDB.NET
+    # Dependabot waits 3 days after a version is released before it proposes it, even with no cooldown configured,
+    # and for a submodule every commit is a version. DuckDB.NET is updated by its own CI-tested commits, so the
+    # submodule is excluded from the cooldown and moves to develop's newest commit on the next daily run.
+    cooldown:
+      exclude:
+        - external/DuckDB.NET
