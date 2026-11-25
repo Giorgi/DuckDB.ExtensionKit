@@ -6,7 +6,7 @@ public static partial class NativeMethods
 {
     internal static unsafe class DataChunks
     {
-        internal static ulong DuckDBDataChunkGetColumnCount(DuckDBDataChunk chunk) => Api.duckdb_data_chunk_get_column_count(chunk.DangerousGetHandle());
+        internal static long DuckDBDataChunkGetColumnCount(DuckDBDataChunk chunk) => (long)Api.duckdb_data_chunk_get_column_count(chunk.DangerousGetHandle());
 
         internal static IntPtr DuckDBDataChunkGetVector(DuckDBDataChunk chunk, long columnIndex) => Api.duckdb_data_chunk_get_vector(chunk.DangerousGetHandle(), (ulong)columnIndex);
 

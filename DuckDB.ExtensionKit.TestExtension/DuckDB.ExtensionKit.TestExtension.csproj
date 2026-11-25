@@ -1,0 +1,77 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-arm64;osx-x64;osx-arm64</RuntimeIdentifiers>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PublishAot>true</PublishAot>
+    <IsAotCompatible>true</IsAotCompatible>
+    <VerifyReferenceAotCompatibility>true</VerifyReferenceAotCompatibility>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+  </PropertyGroup>
+
+  <!-- An extension for the tests in DuckDB.ExtensionKit.Tests only: it registers a function for every kind of value
+       and registration that ExtensionKit supports, and is published with Native AOT like a real extension. -->
+  <PropertyGroup>
+    <ExtensionName>ektest</ExtensionName>
+    <ExtensionVersion>v0.0.1</ExtensionVersion>
+    <UseUnstableApi>false</UseUnstableApi>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(UseUnstableApi)' != 'true'">
+    <DuckDBVersion>v1.2.0</DuckDBVersion>
+    <AbiType>C_STRUCT</AbiType>
+  </PropertyGroup>
+
+  <!-- Unstable API -->
+  <PropertyGroup Condition="'$(UseUnstableApi)' == 'true'">
+    <DuckDBVersion>v1.4.3</DuckDBVersion>
+    <AbiType>C_STRUCT_UNSTABLE</AbiType>
+    <NoWarn>$(NoWarn);DUCKDBExtensionKit001</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DuckDBPlatform Condition="'$(RuntimeIdentifier)' == 'win-x64'">windows_amd64</DuckDBPlatform>
+    <DuckDBPlatform Condition="'$(RuntimeIdentifier)' == 'win-arm64'">windows_arm64</DuckDBPlatform>
+    <DuckDBPlatform Condition="'$(RuntimeIdentifier)' == 'linux-x64'">linux_amd64</DuckDBPlatform>
+    <DuckDBPlatform Condition="'$(RuntimeIdentifier)' == 'linux-arm64'">linux_arm64</DuckDBPlatform>
+    <DuckDBPlatform Condition="'$(RuntimeIdentifier)' == 'osx-x64'">osx_amd64</DuckDBPlatform>
+    <DuckDBPlatform Condition="'$(RuntimeIdentifier)' == 'osx-arm64'">osx_arm64</DuckDBPlatform>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CompilerVisibleProperty Include="ExtensionName" />
+    <CompilerVisibleProperty Include="DuckDBVersion" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DuckDB.ExtensionKit\DuckDB.ExtensionKit.csproj" />
+    <ProjectReference Include="..\DuckDB.ExtensionKit.Generators\DuckDB.ExtensionKit.Generators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Target Name="PackageExtension" AfterTargets="Publish" Condition="'$(PublishAot)' == 'true'">
+    <Error Condition="'$(DuckDBPlatform)' == ''" Text="Unknown RuntimeIdentifier: $(RuntimeIdentifier)" />
+
+    <PropertyGroup>
+      <PythonScriptPath>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '..', 'DuckDB.JWT', 'extension-ci-tools', 'scripts', 'append_extension_metadata.py'))</PythonScriptPath>
+
+      <!-- Determine native library extension based on platform -->
+      <NativeLibExtension Condition="$(RuntimeIdentifier.Contains('win'))">.dll</NativeLibExtension>
+      <NativeLibExtension Condition="$(RuntimeIdentifier.Contains('linux'))">.so</NativeLibExtension>
+      <NativeLibExtension Condition="$(RuntimeIdentifier.Contains('osx'))">.dylib</NativeLibExtension>
+
+      <InputLibPath>$([System.IO.Path]::Combine('$(PublishDir)', '$(AssemblyName)$(NativeLibExtension)'))</InputLibPath>
+      <OutputExtensionPath>$([System.IO.Path]::Combine('$(PublishDir)', '$(ExtensionName).duckdb_extension'))</OutputExtensionPath>
+    </PropertyGroup>
+
+    <Exec Command="python &quot;$(PythonScriptPath)&quot; -l &quot;$(InputLibPath)&quot; -o &quot;$(OutputExtensionPath)&quot; -n $(ExtensionName) -p $(DuckDBPlatform) -dv $(DuckDBVersion) -ev $(ExtensionVersion) --abi-type $(AbiType)" />
+
+    <Message Importance="High" Text="Created $(ExtensionName).duckdb_extension ($(AbiType), $(DuckDBVersion), $(DuckDBPlatform))" />
+  </Target>
+
+</Project>

@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DuckDB.NET.Data.Full" Version="1.4.3" />
+    <PackageReference Include="TUnit" Version="1.7.0" />
+    <PackageReference Include="TUnit.Assertions" Version="1.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\DuckDB.ExtensionKit.TestExtension\bin\Release\net10.0\win-x64\publish\ektest.duckdb_extension" Condition="Exists('..\DuckDB.ExtensionKit.TestExtension\bin\Release\net10.0\win-x64\publish\ektest.duckdb_extension')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>extensions\ektest.duckdb_extension</Link>
+    </None>
+    <None Include="..\DuckDB.ExtensionKit.TestExtension\bin\Release\net10.0\win-arm64\publish\ektest.duckdb_extension" Condition="Exists('..\DuckDB.ExtensionKit.TestExtension\bin\Release\net10.0\win-arm64\publish\ektest.duckdb_extension')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>extensions\ektest.duckdb_extension</Link>
+    </None>
+    <None Include="..\DuckDB.ExtensionKit.TestExtension\bin\Release\net10.0\linux-x64\publish\ektest.duckdb_extension" Condition="Exists('..\DuckDB.ExtensionKit.TestExtension\bin\Release\net10.0\linux-x64\publish\ektest.duckdb_extension')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>extensions\ektest.duckdb_extension</Link>
+    </None>
+    <None Include="..\DuckDB.ExtensionKit.TestExtension\bin\Release\net10.0\linux-arm64\publish\ektest.duckdb_extension" Condition="Exists('..\DuckDB.ExtensionKit.TestExtension\bin\Release\net10.0\linux-arm64\publish\ektest.duckdb_extension')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>extensions\ektest.duckdb_extension</Link>
+    </None>
+    <None Include="..\DuckDB.ExtensionKit.TestExtension\bin\Release\net10.0\osx-x64\publish\ektest.duckdb_extension" Condition="Exists('..\DuckDB.ExtensionKit.TestExtension\bin\Release\net10.0\osx-x64\publish\ektest.duckdb_extension')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>extensions\ektest.duckdb_extension</Link>
+    </None>
+    <None Include="..\DuckDB.ExtensionKit.TestExtension\bin\Release\net10.0\osx-arm64\publish\ektest.duckdb_extension" Condition="Exists('..\DuckDB.ExtensionKit.TestExtension\bin\Release\net10.0\osx-arm64\publish\ektest.duckdb_extension')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>extensions\ektest.duckdb_extension</Link>
+    </None>
+  </ItemGroup>
+
+</Project>

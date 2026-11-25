@@ -177,7 +177,8 @@ The C# types of a function's parameters and result, and of the columns of a tabl
 | `object` | any type | ✓ | |
 
 A nullable value type (`int?`, `DateTime?`, ...) or a nullable reference type (`string?`) accepts and returns NULL.
-The same goes for list elements: a list with NULL elements needs a nullable element type, `List<int?>` and not
+When a scalar function has no nullable parameter, a row with a NULL argument gets a NULL result and the function is
+not called for it. The same goes for list elements: a list with NULL elements needs a nullable element type, `List<int?>` and not
 `List<int>`.
 DuckDB casts an argument of another type when it can, for example a `DECIMAL(9,2)` to `DECIMAL(38,18)` or a
 `TIMESTAMP` to `TIMESTAMPTZ`.
@@ -198,19 +199,41 @@ An `object` parameter accepts any type. Its value is the .NET type of the column
 Not supported yet in a Native AOT extension: reading a STRUCT or a nested LIST. An INTERVAL with months cannot be
 read as `TimeSpan`, nor an infinite DATE or TIMESTAMP as a .NET date.
 
+## Tests
+
+`DuckDB.JWT.Tests` tests the JWT example. `DuckDB.ExtensionKit.Tests` tests ExtensionKit itself, through
+`DuckDB.ExtensionKit.TestExtension`: an extension with a function for every supported type and every kind of
+registration (scalar, `params`, typed and low-level table functions, named parameters, projections). Both
+extensions are published with Native AOT, like a real one, because code that works with the JIT can fail there.
+Publish the extension for your platform, then run the tests:
+
+```bash
+dotnet publish DuckDB.ExtensionKit.TestExtension -c Release -r linux-x64   # or win-x64, osx-arm64, ...
+dotnet test --project DuckDB.ExtensionKit.Tests
+```
+
 ## Code Shared with DuckDB.NET
 
-The vector readers and writers, their helpers, and the native value types (`DuckDBType`, `DuckDBDateOnly`,
-`DuckDBHugeInt`, ...) are not copied into this repository. They are compiled from
-[DuckDB.NET](https://github.com/Giorgi/DuckDB.NET), which is the `external/DuckDB.NET` submodule. The linked files are
-listed in `DuckDB.ExtensionKit/DuckDB.ExtensionKit.csproj`.
+The vector readers and writers, their helpers, the native value types (`DuckDBType`, `DuckDBDateOnly`,
+`DuckDBHugeInt`, ...), and the registration of scalar and table functions are not copied into this repository. They
+are compiled from [DuckDB.NET](https://github.com/Giorgi/DuckDB.NET), which is the `external/DuckDB.NET` submodule.
+The linked files are listed in `DuckDB.ExtensionKit/DuckDB.ExtensionKit.csproj`.
+
+The registration is DuckDB.NET's `DuckDB.NET.Data/Functions` folder: the per-row loops of the typed functions, NULL
+handling, table function projections and parameters, and DuckDB's callbacks. The public methods of this project
+(`ScalarFunctions/` and `TableFunctions/`) only forward to it, as DuckDB.NET's own do, so both have the same behaviour.
+That folder's `AGENTS.md` lists what it keeps for this project, such as calling only functions of C API v1.2.0. Its
+public types (`TableFunction`, `ColumnInfo`, `CardinalityHint`, `ProjectedColumn`, `ScalarFunctionOptions`,
+`NamedAttribute`) are defined here as well, in this project's namespaces, and an exception that a function throws
+only reaches DuckDB as its message (`Connection/UdfErrors.cs`).
 
 Those files reach native code only through `NativeMethods.*` and the handle types such as `DuckDBLogicalType`. DuckDB.NET
 implements them with P/Invoke; this project implements them over the function table that DuckDB passes to an extension
 (`NativeMethods/` and `Native/`). A wrapper that a linked file calls must have the signature DuckDB.NET.Bindings gives it,
 and a mismatch shows up as a build error here.
 
-To take newer DuckDB.NET code, move the submodule and build:
+Dependabot opens a pull request every day that DuckDB.NET's `develop` branch has new commits, moving the submodule;
+its CI shows whether the new code still builds and passes here. To move it by hand:
 
 ```bash
 git -C external/DuckDB.NET fetch origin develop
